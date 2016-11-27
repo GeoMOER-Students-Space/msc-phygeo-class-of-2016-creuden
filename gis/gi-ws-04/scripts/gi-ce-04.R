@@ -37,11 +37,8 @@ gdal<- initgdalUtils()
 # check SAGA binaries and export pathes to .envGlobal
 # ***NOTE*** c("C:\\OSGeo4W64\\apps\\saga","C:\\OSGeo4W64\\apps\\saga\\modules")
 #            is the default osgeo4w64 bit installation path
-#            unfortunately it uses SAGA 2.1.2 which has some weird
-#            command line issues like in the io_gdal 0 module
-#            you have to use a different call syntax than in the other modules
 #            it is strongly recommended to install SAGA standalone
-initSAGA(c("C:\\apps\\saga_3.0.0_x64\\saga_3.0.0_x64","C:\apps\\saga_3.0.0_x64\\saga_3.0.0_x64\\modules"))
+initSAGA(c("C:\\apps\\saga_3.0.0_x64","C:\apps\\saga_3.0.0_x64\\modules"))
 
 ######### START of the thematic stuff ----------------------------------------
 # Basic Workflow Task 1 post filtering
