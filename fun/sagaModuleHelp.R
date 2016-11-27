@@ -13,9 +13,9 @@
 sagaModuleHelp<- function(module,algorithm=NULL) {
   options(warn=-1)
   if (!is.null(algorithm)){  
-    info<- system2('saga_cmd',paste(module,algorithm),stderr = TRUE)
+    info<- system(paste(sagaCmd,module,algorithm),intern = TRUE)
   } else{
-    info<-system2("saga_cmd",paste(module),stderr = TRUE)
+    info<-system(paste(sagaCmd,module),intern = TRUE)
   }
   options(warn=0)
   return(info)

@@ -35,7 +35,13 @@ getSessionPathes(filepath_git = filepath_base, sessNo = activeSession)
 gdal<- initgdalUtils()
 
 # check SAGA binaries and export pathes to .envGlobal
-initSAGA()
+# ***NOTE*** c("C:\\OSGeo4W64\\apps\\saga","C:\\OSGeo4W64\\apps\\saga\\modules")
+#            is the default osgeo4w64 bit installation path
+#            unfortunately it uses SAGA 2.1.2 which has some weird
+#            command line issues like in the io_gdal 0 module
+#            you have to use a different call syntax than in the other modules
+#            it is strongly recommended to install SAGA standalone
+initSAGA(c("C:\\apps\\saga_3.0.0_x64\\saga_3.0.0_x64","C:\apps\\saga_3.0.0_x64\\saga_3.0.0_x64\\modules"))
 
 ######### START of the thematic stuff ----------------------------------------
 # Basic Workflow Task 1 post filtering
@@ -65,6 +71,7 @@ initSAGA()
 ksize<-3
 
 # kernelsize for smothing modal filter
+
 msize<-5
 
 #[FuzzyLf]
@@ -78,13 +85,19 @@ t_curve_max<-  0.0001
 # (GDAL) gdalwarp is used to convert the data format from tif to SAGA format
 gdalUtils::gdalwarp(paste0(pd_gi_input,inputFile),paste0(pd_gi_run,"rt_dem.sdat"), overwrite=TRUE,  of='SAGA') 
 
-# ***NOTE*** same as before using saga_cmd
+# ***NOTE1*** same as before using saga_cmd
+# ***NOTE2*** if you use a SAGA Version < 2.14 you have to change the call to:
+#            system(paste0(sagaCmd, ' io_gdal "GDAL: Import Raster"',
+#            ' -GRIDS=', pd_gi_run,'rt_dem.sgrd',
+#            ' -FILES=',pd_gi_input,inputFile,
+#            ' -INTERPOL=4'))
+
 # (SAGA) import DEM to saga 
-system(paste0(sagaCmd," io_gdal 0 ",
-              "-GRIDS ", pd_gi_run,"rt_dem.sgrd ",
-              "-TRANSFORM 0 ",
-              "-FILES ",pd_gi_input,inputFile," ",
-              "-INTERPOL 0 ")
+system(paste0(sagaCmd," io_gdal 0",
+              " -GRIDS ", pd_gi_run,"rt_dem.sgrd",
+              " -TRANSFORM 0",
+              " -FILES ",pd_gi_input,inputFile,
+              " -INTERPOL 0")
 )
 
 # (R) assign the input file to a R raster
@@ -170,7 +183,7 @@ system(paste0("saga_cmd grid_filter 6 ",
 
 
 # (R) same with R get rid of the noise
-landformModalR<- raster::focal(landformSAGA, w=matrix(1, nc=msize, nr=msize),fun=modal,na.rm = TRUE, pad = TRUE)
+landformModalR<- raster::focal(landformSAGA, w=matrix(1, nc=msize, nr=msize),fun=raster::modal,na.rm = TRUE, pad = TRUE)
 
 
 ###  reclass to plain / plateau  ----------------------------------------------
