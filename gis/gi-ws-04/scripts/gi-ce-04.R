@@ -37,12 +37,17 @@ gdal<- initgdalUtils()
 # check SAGA binaries and export pathes to .envGlobal
 initSAGA()
 
+######### START of the thematic stuff ----------------------------------------
+
+# here we start with the content and scientific stuff
+
 ######### setup the the variables for the script ------------------------------
 
-# kernelsize for smoothing
+# kernelsize for smoothing (meanfilter)
 ksize<-3
 
-
+# kernelsize for smothing modal filter
+msize<-5
 #[FuzzyLf]
 slopetodeg<-   0
 t_slope_min<- 3.0
