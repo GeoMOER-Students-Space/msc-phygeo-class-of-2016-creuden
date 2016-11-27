@@ -170,7 +170,7 @@ system(paste0("saga_cmd grid_filter 6 ",
 
 
 # (R) same with R get rid of the noise
-landformModalR<- focal(landformSAGA, w=matrix(1, nc=msize, nr=msize),fun=modal,na.rm = TRUE, pad = TRUE)
+landformModalR<- raster::focal(landformSAGA, w=matrix(1, nc=msize, nr=msize),fun=modal,na.rm = TRUE, pad = TRUE)
 
 
 ###  reclass to plain / plateau  ----------------------------------------------
