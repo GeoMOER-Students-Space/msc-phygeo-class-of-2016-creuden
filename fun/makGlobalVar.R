@@ -5,6 +5,6 @@ makGlobalVar <- function(name,value) {
   if(!exists(name, envir = .GlobalEnv)) {
     assign(name, value, envir = .GlobalEnv, inherits = TRUE)
   } else {
-    warning("One or more variables did alredy exist in .GlobalEnv  ")
+    warning(paste0("The variable '", name,"' already exist in .GlobalEnv"))
   } 
 }

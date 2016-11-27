@@ -31,9 +31,8 @@ initgdalUtils <- function(){
     gdal<-getOption("gdalUtils_gdalPath")
   }
   
-  # make the pathes also available for System calls
+  # make the path available for System calls
   makGlobalVar("gdalPath", gdal[[1]]$path)
-  makGlobalVar("gdalPython", gdal[[1]]$python_utilities)
   
   # add to the beginning of the sessions PATH
   add2Path(gdal[[1]]$path)
