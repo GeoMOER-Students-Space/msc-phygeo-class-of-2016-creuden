@@ -18,12 +18,12 @@
 #'
 #'
 
-initSAGA <- function(defaultSAGA = c("C:\\OSGeo4W\\apps\\saga","C:\\OSGeo4W\\apps\\saga")){
+initSAGA <- function(defaultSAGA = c("C:\\OSGeo4W64\\apps\\saga","C:\\OSGeo4W64\\apps\\saga\\modules")){
   
   # (R) set pathes  of SAGA modules and binaries depending on OS  
   exist<-FALSE
   if(Sys.info()["sysname"] == "Windows"){
-    makGlobalVar("sagaCmd", paste0(defaultSAGA[1],"/saga_cmd.exe"))
+    makGlobalVar("sagaCmd", paste0(defaultSAGA[1],"\\saga_cmd.exe"))
     makGlobalVar("sagaPath", defaultSAGA[1])
     makGlobalVar("sagaModPath",  defaultSAGA[2])
     

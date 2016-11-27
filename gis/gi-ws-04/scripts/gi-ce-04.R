@@ -12,7 +12,7 @@
 ######### setup the environment -----------------------------------------------
 
 # define project folder
-filepath_base<-"~/lehre/msc/active/msc-2016/msc-phygeo-class-of-2016-creuden/"
+filepath_base<-"~/lehre/active/msc-phy-geo-2016/msc-phygeo-class-of-2016-creuden/"
 
 # define the actual course session
 activeSession<-4
@@ -66,6 +66,7 @@ ksize<-3
 
 # kernelsize for smothing modal filter
 msize<-5
+
 #[FuzzyLf]
 slopetodeg<-   0
 t_slope_min<- 3.0
@@ -79,7 +80,7 @@ gdalUtils::gdalwarp(paste0(pd_gi_input,inputFile),paste0(pd_gi_run,"rt_dem.sdat"
 
 # ***NOTE*** same as before using saga_cmd
 # (SAGA) import DEM to saga 
-system(paste0("saga_cmd io_gdal 0 ",
+system(paste0(sagaCmd," io_gdal 0 ",
               "-GRIDS ", pd_gi_run,"rt_dem.sgrd ",
               "-TRANSFORM 0 ",
               "-FILES ",pd_gi_input,inputFile," ",
@@ -96,11 +97,11 @@ dem<-raster::raster(paste0(pd_gi_input,inputFile))
 demf<- raster::focal(dem, w=matrix(1/(ksize*ksize)*1.0, nc=ksize, nr=ksize))
 
 # export it to tif format
-raster::writeRaster(demf,paste0(pd_gi_run,"rt_fildemR.tif"))
+raster::writeRaster(demf,paste0(pd_gi_run,"rt_fildemR.tif"),overwrite=TRUE)
 
 # ***NOTE*** This is possible because we already did convert the input file to SAGA
 # (SAGA) takes times longer than focal
-system(paste0("saga_cmd grid_filter 0",
+system(paste0(sagaCmd," grid_filter 0",
               " -INPUT ",pd_gi_run,"rt_dem.sgrd",
               " -RESULT ",pd_gi_run,"rt_fildemSAGA.sgrd",
               " -RADIUS ",as.character(ceiling((ksize/2)+1))))
@@ -118,7 +119,7 @@ raster::plot(demfSAGA$rt_fildem)
 # *** NOTE *** take care if you take the results from:
 # (1) SAGA "rt_fildemSAGA.sgrd" 
 # (2) R ("rt_fildemR.tif")
-system(paste0("saga_cmd ta_morphometry 0 ",
+system(paste0(sagaCmd," ta_morphometry 0 ",
               "-ELEVATION ", pd_gi_run,"rt_fildem.sgrd ",
               "-UNIT_SLOPE 1 ",
               "-UNIT_ASPECT 1 ",
@@ -137,7 +138,7 @@ system(paste0("saga_cmd ta_morphometry 0 ",
 # PLAIN     , 100  # PIT       , 111  # PEAK      , 122  # RIDGE     , 120  # CHANNEL   , 101	
 # SADDLE    , 121	# BSLOPE    ,   0	# FSLOPE    ,  10	# SSLOPE    ,  20	# HOLLOW    ,   1	
 # FHOLLOW   ,  11	# SHOLLOW   ,  21	# SPUR      ,   2	# FSPUR     ,  12	# SSPUR     ,  22	
-system(paste0("saga_cmd ta_morphometry 25 ",
+system(paste0(sagaCmd," ta_morphometry 25 ",
               "-SLOPE "  ,pd_gi_run,"rt_slope.sgrd ", 
               "-MINCURV ",pd_gi_run,"rt_mincurve.sgrd ",
               "-MAXCURV ",pd_gi_run,"rt_maxcurve.sgrd ", 
