@@ -110,7 +110,7 @@ setPathGlobal<- function(filepath_git,csess=15,ccourse="gi", moc=TRUE) {
     # function folder for all courses
     name<-paste0("pgit_fun")
     value<-paste0(filepath_git,"/fun/")
-    exV(name, value)
+     makGlobalVar(name, value)
     # and the rest
     if (!file.exists(file.path(paste0(filepath_git,"/fun/")))) {
       dir.create(file.path(paste0(filepath_git,"/fun/")), recursive = TRUE)
@@ -122,7 +122,7 @@ setPathGlobal<- function(filepath_git,csess=15,ccourse="gi", moc=TRUE) {
             for (m in 1:length(session_working_folder)) {
               name<-paste0("pg_", substr(session_ID[j],1,2),"_",as.character(gsub("/", "", session_number[l])),"_",as.character(gsub("/", "",session_working_folder[m])))
               value<- paste0(proj_root_git[i],sub_root[j],session_ID[j],session_number[l],session_working_folder[m])
-              exV(name, value)
+               makGlobalVar(name, value)
               if (!file.exists(file.path(paste0(proj_root_git[i],sub_root[j],session_ID[j],session_number[l],session_working_folder[m])))) {
                 dir.create(file.path(paste0(proj_root_git[i],sub_root[j],session_ID[j],session_number[l],session_working_folder[m])), recursive = TRUE)
               }
@@ -138,7 +138,7 @@ setPathGlobal<- function(filepath_git,csess=15,ccourse="gi", moc=TRUE) {
         for (k in 1:length(data_working_folder[[j]])) {
           name<-paste0("pd_",substr(session_ID[j],1,2),"_",as.character(gsub("/", "",data_working_folder[[j]][k])))
           value<- paste0(proj_root_data[i],sub_root[j],data_working_folder[[j]][k])
-          exV(name, value)
+           makGlobalVar(name, value)
           if (ccourse==substr(session_ID[j],1,2) && data_working_folder[[j]][k]=="run/"){
             path_temp<- value
           }
@@ -156,7 +156,7 @@ setPathGlobal<- function(filepath_git,csess=15,ccourse="gi", moc=TRUE) {
     path_temp<-paste0(filepath_git,"run/")
     for(folder in default_folders){
       name<-paste0("p",as.character(gsub("/", "_",substr(folder,nchar(filepath_git),nchar(folder)-1))))
-      exV(name, folder)
+       makGlobalVar(name, folder)
       if (!file.exists(file.path(folder))) {
         dir.create(file.path(folder), recursive = TRUE)
       }
@@ -172,11 +172,4 @@ setPathGlobal<- function(filepath_git,csess=15,ccourse="gi", moc=TRUE) {
   # set R working directory
   setwd(file.path(path_temp))
   
-}
-
-# assigns a variable in .GlobalEnv 
-exV <- function(name,value) {
-  if(!exists(name, envir = .GlobalEnv)) {
-    assign(name, value, envir = .GlobalEnv, inherits = TRUE)
-  } 
 }

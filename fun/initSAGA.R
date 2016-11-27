@@ -19,39 +19,28 @@
 #'
 
 initSAGA <- function(defaultSAGA = c("C:\\OSGeo4W\\apps\\saga","C:\\OSGeo4W\\apps\\saga")){
-
-# (R) set pathes  of SAGA modules and binaries depending on OS  
-exist<-FALSE
-if(Sys.info()["sysname"] == "Windows"){
-  makGlobalVar("sagaCmd", paste0(defaultSAGA[1],"/saga_cmd.exe"))
-  makGlobalVar("sagaPath", defaultSAGA[1])
-  makGlobalVar("sagaModPath",  defaultSAGA[2])
-  # check if already in system path
-  p<- Sys.getenv("PATH")
-  if(substr(p, 1,nchar(sagaPath)) == sagaPath){
-    exist<-TRUE
-  }
-  # if NOT already done append SAGA path to systempath
-  if (!exist){
-    Sys.setenv(PATH=paste0(sagaPath,";",sagaModPath,";",Sys.getenv("PATH")))}
-}else {
-  if (substr(defaultSAGA[1],2,2) == ":") {
-    makGlobalVar("sagaCmd", "/usr/local/bin/saga_cmd")
-    makGlobalVar("sagaPath", "/usr/local/bin")
-    makGlobalVar("sagaModPath","/usr/local/lib/saga")
+  
+  # (R) set pathes  of SAGA modules and binaries depending on OS  
+  exist<-FALSE
+  if(Sys.info()["sysname"] == "Windows"){
+    makGlobalVar("sagaCmd", paste0(defaultSAGA[1],"/saga_cmd.exe"))
+    makGlobalVar("sagaPath", defaultSAGA[1])
+    makGlobalVar("sagaModPath",  defaultSAGA[2])
+    
+    add2Path(defaultSAGA[1])
+    add2Path(defaultSAGA[2])
+    
   } else {
-  makGlobalVar("sagaCmd", paste0(defaultSAGA[1],"/saga_cmd"))
-  makGlobalVar("sagaPath", defaultSAGA[1])
-  makGlobalVar("sagaModPath",  defaultSAGA[2])
-}
-  # check if already in path
-  p<- Sys.getenv("PATH")
-  if(substr(p, 1,nchar(sagaPath)) == sagaPath){
-    exist<-TRUE
+    if (substr(defaultSAGA[1],2,2) == ":") {
+      makGlobalVar("sagaCmd", "/usr/local/bin/saga_cmd")
+      makGlobalVar("sagaPath", "/usr/local/bin")
+      makGlobalVar("sagaModPath","/usr/local/lib/saga")
+    } else {
+      makGlobalVar("sagaCmd", paste0(defaultSAGA[1],"/saga_cmd"))
+      makGlobalVar("sagaPath", defaultSAGA[1])
+      makGlobalVar("sagaModPath",  defaultSAGA[2])
+    }
+    add2Path(defaultSAGA[1])
+    add2Path(defaultSAGA[2])
   }
-  # append SAGA path to systempath
-  if (!exist){
-    Sys.setenv(PATH=paste0(sagaPath,":",sagaModPath,":",Sys.getenv("PATH")))}
-}
-
 }

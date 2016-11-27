@@ -7,6 +7,8 @@
 #'@example 
 #'
 #' # get all available driver 
+#' gdal<- initgdalUtils()
+#' 
 #' gdal[[1]]$drivers$format_code
 #' 
 #' # GET BINARY PATH 
@@ -19,17 +21,25 @@
 #'
 initgdalUtils <- function(){
   
-## (gdalUtils) check for a valid GDAL binary installation on your system
-gdalUtils::gdal_setInstallation()
-valid.install<-!is.null(getOption("gdalUtils_gdalPath"))
-if (!valid.install){
-  stop('no valid GDAL/OGR found')
-}else {
-  cat("GDAL version: ",getOption("gdalUtils_gdalPath")[[1]]$version)
-  gdal<-getOption("gdalUtils_gdalPath")
-}
-
-return(gdal)
-
-
+  ## (gdalUtils) check for a valid GDAL binary installation on your system
+  gdalUtils::gdal_setInstallation()
+  valid.install<-!is.null(getOption("gdalUtils_gdalPath"))
+  if (!valid.install){
+    stop('no valid GDAL/OGR found')
+  }else {
+    cat("GDAL version: ",getOption("gdalUtils_gdalPath")[[1]]$version)
+    gdal<-getOption("gdalUtils_gdalPath")
+  }
+  
+  # make the pathes also available for System calls
+  makGlobalVar("gdalPath", gdal[[1]]$path)
+  makGlobalVar("gdalPython", gdal[[1]]$python_utilities)
+  
+  # add to the beginning of the sessions PATH
+  add2Path(gdal[[1]]$path)
+  
+  
+  # return all gdalUtilSettings
+  return(gdal)
+  
 }
