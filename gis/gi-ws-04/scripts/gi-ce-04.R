@@ -1,33 +1,47 @@
+# gi-ws-04 main control script 
+# MOC - Advanced GIS (T. Nauss, C. Reudenbach)
+# gi-ce-04  (1) show the use of the external helper functions (for a given fixed structure) 
+#           (2) shows the basic workflow of a main script using main sections as marked with 
+#               ### some explanation -----------------------------------------
+#           (3) shows good practice syntax and commandline examples  
+#           (4) shows some alternatives using SAGA or R for the same task
+#
+# see also: https://github.com/logmoc/msc-phygeo-class-of-2016-creuden
 
- # define project folder
+
+######### setup the environment -----------------------------------------------
+
+# define project folder
 filepath_base<-"~/lehre/msc/active/msc-2016/msc-phygeo-class-of-2016-creuden/"
+
+# define the actual course session
 activeSession<-4
+
+# define the used input file(s)
 inputFile<- "geonode-las_dtm_01m.tif"
 
 # make a list of all functions in the corresponding function folder
 sourceFileNames <- list.files(pattern="[.]R$", path=paste0(filepath_base,"fun"), full.names=TRUE)
 
 # source all functions
-sapply(sourceFileNames, FUN=source)
+res<- sapply(sourceFileNames, FUN=source)
 
-# set the global path variables for the current script
-setPathGlobal(filepath_base,csess = 15)
+# get the global path variables for the current session
+getSessionPathes(filepath_git = filepath_base, sessNo = activeSession)
 
+######### initialize the external GIS packages --------------------------------
+
+# check GDAL binaries and start gdalUtils
+gdal<- initgdalUtils()
+
+# check SAGA binaries and export pathes to .envGlobal
+initSAGA()
+
+######### setup the the variables for the script ------------------------------
 
 # kernelsize for smoothing
 ksize<-3
-msize<-5
 
-# TRUE = filter + standard morphometric + fuzzy
-# FALSE= wood + fuzzy
-basic<-TRUE
-
-#[Wood]
-wsize<-    3
-tol_slope<-14.000000
-tol_curve<-0.00001
-exponent<- 0.000000
-zscale<-   1.000000
 
 #[FuzzyLf]
 slopetodeg<-   0
@@ -37,39 +51,52 @@ t_curve_min<-  0.00000001
 t_curve_max<-  0.0001
 
 
-# (GDAL) gdalwarp is used to (1) convert the data format (2) assign the
-# projection information to the data.
-gdalUtils::gdalwarp(paste0(pd_gi_input,inputFile),paste0(pd_gi_output,"rt_dem.sdat"), overwrite=TRUE,  of='SAGA') 
+# (GDAL) gdalwarp is used to convert the data format from tif to SAGA format
+gdalUtils::gdalwarp(paste0(pd_gi_input,inputFile),paste0(pd_gi_run,"rt_dem.sdat"), overwrite=TRUE,  of='SAGA') 
 
+# ***NOTE*** same as before using saga_cmd
 # (SAGA) import DEM to saga 
 system(paste0("saga_cmd io_gdal 0 ",
-              "-GRIDS ", pd_gi_output,"rt_dem.sgrd ",
+              "-GRIDS ", pd_gi_run,"rt_dem.sgrd ",
               "-TRANSFORM 0 ",
               "-FILES ",pd_gi_input,inputFile," ",
               "-INTERPOL 0 ")
 )
 
-
-# (R) read raster
+# (R) assign the input file to a R raster
 dem<-raster::raster(paste0(pd_gi_input,inputFile))
 
-if (basic) {
-# (R) mean filter
-#demf<- focal(dem, w=matrix(1/(ksize*ksize)*1.0, nc=ksize, nr=ksize))
 
+###  mean filter of the input file -----------------------------------------
+# *** NOTE *** we are using the parameter setting from above
+# (R) mean filter very fast due to the mean calculation inside the filter matrix
+demf<- raster::focal(dem, w=matrix(1/(ksize*ksize)*1.0, nc=ksize, nr=ksize))
+
+# export it to tif format
+raster::writeRaster(demf,paste0(pd_gi_run,"rt_fildemR.tif"))
+
+# ***NOTE*** This is possible because we already did convert the input file to SAGA
 # (SAGA) takes times longer than focal
-#print('Filtering the DEM - may take a while...')
-#system(paste0("saga_cmd grid_filter 0 ",
-#              "-INPUT ",pd_gi_output,"rt_dem.sgrd ",
-#              "-RESULT ",pd_gi_output,"rt_fildem.sgrd ",
-#              "-RADIUS ",as.character((ksize/2)+1)))
-#gdalUtils::gdalwarp(paste0(pd_gi_output,"rt_fildem.sdat"),paste0(pd_gi_output,"rt_fildem.tif") , overwrite=TRUE)  
-#fildem<-raster::raster(paste0(pd_gi_output,"rt_fildem.tif"))
-#plot(fildem)
+system(paste0("saga_cmd grid_filter 0",
+              " -INPUT ",pd_gi_run,"rt_dem.sgrd",
+              " -RESULT ",pd_gi_run,"rt_fildemSAGA.sgrd",
+              " -RADIUS ",as.character(ceiling((ksize/2)+1))))
 
-# standard morhpometry
+# (R) plot the results
+raster::plot(demf)
+
+# (SAGA) plot the results
+# ***NOTE*** we need to re-convert SAGA to raster
+gdalUtils::gdalwarp(paste0(pd_gi_run,"rt_fildem.sdat"),paste0(pd_gi_run,"rt_fildem.tif") , overwrite=TRUE)  
+demfSAGA<-raster::raster(paste0(pd_gi_run,"rt_fildem.tif"))
+raster::plot(demfSAGA$rt_fildem)
+
+###  now caluating the standard morhpometry -----------------------------------
+# *** NOTE *** take care if you take the results from:
+# (1) SAGA "rt_fildemSAGA.sgrd" 
+# (2) R ("rt_fildemR.tif")
 system(paste0("saga_cmd ta_morphometry 0 ",
-              "-ELEVATION ", pd_gi_output,"rt_fildem.sgrd ",
+              "-ELEVATION ", pd_gi_run,"rt_fildem.sgrd ",
               "-UNIT_SLOPE 1 ",
               "-UNIT_ASPECT 1 ",
               "-SLOPE ",pd_gi_run,"rt_slope.sgrd ", 
@@ -79,43 +106,14 @@ system(paste0("saga_cmd ta_morphometry 0 ",
               "-C_MINI ",pd_gi_run,"rt_mincurve.sgrd ",
               "-C_MAXI ",pd_gi_run,"rt_maxcurve.sgrd"))
 
-} else{
 
-
-  
-  # morphometric features
-  # calculate wood's terrain indices   wood= 1=planar,2=pit,3=channel,4=pass,5=ridge,6=peak
-  system(paste0("saga_cmd ta_morphometry 23 ",
-                "-DEM ",pd_gi_output,"rt_dem.sgrd " ,
-                "-FEATURES ",pd_gi_output,"rt_woodLANDFORM.sgrd " ,
-                "-ELEVATION ",pd_gi_output,"rt_genSURFACE.sgrd " , 
-                "-SLOPE ",pd_gi_run,"rt_slope.sgrd ", 
-                "-ASPECT ",pd_gi_run,"rt_aspect.sgrd ",
-                "-LONGC ",pd_gi_run,"rt_profcurve.sgrd ",
-                "-CROSC ",pd_gi_run,"rt_tangcurve.sgrd ",
-                "-MINIC ",pd_gi_run,"rt_mincurv.sgrd ",
-                "-MAXIC ",pd_gi_run,"rt_maxcurv.sgrd ", 
-                "-SIZE ",ksize," ",
-                "-TOL_SLOPE ",tol_slope," ",
-                "-TOL_CURVE ",tol_curve," ",
-                "-EXPONENT ",exponent," ",
-                "-ZSCALE ", zscale))
-  
-  gdalUtils::gdalwarp(paste0(pd_gi_run,"rt_woodLANDFORM.sdat"),paste0(pd_gi_run,"rt_woodLANDFORM.tif") , overwrite=TRUE)  
-  wooddem<-raster::raster(paste0(pd_gi_input,"rt_genSURFACE.tif"))
-  wood<-raster::raster('rt_woodLANDFORM.tif')
-  raster::plot(wood)
-  
-
-}
-
-# calculate Jochen Schmidt's fuzzy landforms (https://faculty.unlv.edu/buckb/GEOL%20786%20Photos/NRCS%20data/Fuzz/felementf.aml) fuzzylandoforms are:  
-# using SAGA 'ta_morphometry',"Fuzzy Landform Element Classification" The result is classified as follows:
+###  (SAGA) 'ta_morphometry',"Fuzzy Landform Element Classification"-----------
+# *** NOTE *** we are using the parameter setting from above
+# Reference: Jochen Schmidt's fuzzy landforms (https://faculty.unlv.edu/buckb/GEOL%20786%20Photos/NRCS%20data/Fuzz/felementf.aml) fuzzylandoforms are:  
+# The result is classified as follows:
 # PLAIN     , 100  # PIT       , 111  # PEAK      , 122  # RIDGE     , 120  # CHANNEL   , 101	
 # SADDLE    , 121	# BSLOPE    ,   0	# FSLOPE    ,  10	# SSLOPE    ,  20	# HOLLOW    ,   1	
 # FHOLLOW   ,  11	# SHOLLOW   ,  21	# SPUR      ,   2	# FSPUR     ,  12	# SSPUR     ,  22	
-# NOTEwood SIZE=9,TOL_SLOPE=10.000000,TOL_CURVE=0.00001,EXPONENT=0.000000,ZSCALE=1.000000 
-# fuzzy SLOPETODEG='0',T_SLOPE_MIN=0.0000001,T_SLOPE_MAX=20.000000,T_CURVE_MIN=0.00000001,T_CURVE_MAX=0.0001))
 system(paste0("saga_cmd ta_morphometry 25 ",
               "-SLOPE "  ,pd_gi_run,"rt_slope.sgrd ", 
               "-MINCURV ",pd_gi_run,"rt_mincurve.sgrd ",
@@ -128,45 +126,39 @@ system(paste0("saga_cmd ta_morphometry 25 ",
               "-T_SLOPE_MAX  ",t_slope_max," ",
               "-T_CURVE_MIN  ",t_curve_min," ",
               "-T_CURVE_MAX  ",t_curve_max))
-#microbenchmark(
-#system(paste0("saga_cmd grid_filter 6 ",
-#              "-INPUT ",pd_gi_run,"rt_LANDFORM.sgrd ",
-#              "-MODE 0 ",
-#              "-RESULT ",pd_gi_output,"rt_modal.sgrd ",
-#              "-RADIUS  ",msize," ",
-#              "-THRESHOLD 0.000000"))
-#,times = 1)
+
+# export it to  R as an raster object
+gdalUtils::gdalwarp(paste0(pd_gi_run,"rt_LANDFORM.sdat"),
+                    paste0(pd_gi_run,"rt_LANDFORM.tif") , 
+                    overwrite=TRUE) 
+landformSAGA<-raster::raster(paste0(pd_gi_run,"rt_LANDFORM.tif"))
 
 
-# read sdat file into raster object
-gdalUtils::gdalwarp(paste0(pd_gi_output,"rt_modal.sdat"),paste0(pd_gi_run,"rt_LANDFORM.tif") , overwrite=TRUE) 
-landform<-raster::raster('rt_LANDFORM.tif')
-raster::plot(landform)
-#microbenchmark(
-# get rid of the noise
-flatm<- focal(landform, w=matrix(1, nc=msize, nr=msize),fun=modal,na.rm = TRUE, pad = TRUE)
-#, times = 1)
+###  modal filter for smoothing the classified areas --------------------------
+
+# (SAGA) first using SAGA get rid of the noise
+system(paste0("saga_cmd grid_filter 6 ",
+              "-INPUT ",pd_gi_run,"rt_LANDFORM.sgrd ",
+              "-MODE 0 ",
+              "-RESULT ",pd_gi_run,"rt_modalSAGA.sgrd ",
+              "-RADIUS  ",msize," ",
+              "-THRESHOLD 0.000000"))
 
 
-# we have to reassign correct projection due to some troubles in twgs84 transformations
-# crs(peak.area)<-
-# reclassify fuzzylandforms to get a binary peak mask
-flat<-raster::reclassify(landform, c(0,99,0, 99,100,1,100,200,0 ))
+# (R) same with R get rid of the noise
+landformModalR<- focal(landformSAGA, w=matrix(1, nc=msize, nr=msize),fun=modal,na.rm = TRUE, pad = TRUE)
 
-# plot it
-raster::plot(flat)
-# reclass it statically
-flat[flat==1 & dem>240]<-1  
+
+###  reclass to plain / plateau  ----------------------------------------------
+# *** NOTE *** take care if you take the results from:
+# (1) SAGA  not exported yet
+# (2) R ("landformModalR")
+flat<-raster::reclassify(landformSAGA, c(0,99,0, 99,100,1,100,200,0 ))
+
+# finally reclass it according to fixed altitude tresholds
+flat[flat==1 & dem>300]<-3  
+flat[flat==1 & dem>240 & dem <= 300]<-0  
 flat[flat==1 & dem<=240 ]<-2
 raster::plot(flat)
-
-# plot it again
-raster::plot(flat)
-
-rawHlp<-sagaModuleHelp("grid_filter","0")
-sagaModuleCmd("grid_filter","0")
-system2("saga_cmd","io_gdal 0 -h",stdout = TRUE)
-
-
 
 
