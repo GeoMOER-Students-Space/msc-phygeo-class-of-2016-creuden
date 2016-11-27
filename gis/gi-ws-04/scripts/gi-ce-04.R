@@ -8,9 +8,9 @@
 #
 # see also: https://github.com/logmoc/msc-phygeo-class-of-2016-creuden
 
-
+#########                       -----------------------------------------------
 ######### setup the environment -----------------------------------------------
-
+#########                       -----------------------------------------------
 # define project folder
 filepath_base<-"~/lehre/active/msc-phy-geo-2016/msc-phygeo-class-of-2016-creuden/"
 
@@ -29,8 +29,9 @@ res<- sapply(sourceFileNames, FUN=source)
 # get the global path variables for the current session
 getSessionPathes(filepath_git = filepath_base, sessNo = activeSession)
 
+#########                       -----------------------------------------------
 ######### initialize the external GIS packages --------------------------------
-
+#########                       -----------------------------------------------
 # check GDAL binaries and start gdalUtils
 gdal<- initgdalUtils()
 
@@ -40,7 +41,9 @@ gdal<- initgdalUtils()
 #            it is strongly recommended to install SAGA standalone
 initSAGA(c("C:\\apps\\saga_3.0.0_x64","C:\apps\\saga_3.0.0_x64\\modules"))
 
+#########                       -----------------------------------------------
 ######### START of the thematic stuff ----------------------------------------
+#########                       -----------------------------------------------
 # Basic Workflow Task 1 post filtering
 # 1) import DEM data
 # 2) calculate basic morphometry as needed for fuzzy landforms 
@@ -61,9 +64,9 @@ initSAGA(c("C:\\apps\\saga_3.0.0_x64","C:\apps\\saga_3.0.0_x64\\modules"))
 # understand which output from the basic morphometry is used as input for fuzzy landform 
 # define the parameters used by fuzzy landforms 
 
-
+#########                       -----------------------------------------------
 ######### setup the the variables for the script ------------------------------
-
+#########                       -----------------------------------------------
 # kernelsize for smoothing (meanfilter)
 ksize<-3
 
@@ -78,6 +81,9 @@ t_slope_max<- 10.0
 t_curve_min<-  0.00000001
 t_curve_max<-  0.0001
 
+#########                       -----------------------------------------------
+######### start core script     -----------------------------------------------
+#########                       -----------------------------------------------
 
 # (GDAL) gdalwarp is used to convert the data format from tif to SAGA format
 gdalUtils::gdalwarp(paste0(pd_gi_input,inputFile),paste0(pd_gi_run,"rt_dem.sdat"), overwrite=TRUE,  of='SAGA') 
