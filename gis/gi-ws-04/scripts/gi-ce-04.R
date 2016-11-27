@@ -85,19 +85,18 @@ t_curve_max<-  0.0001
 # (GDAL) gdalwarp is used to convert the data format from tif to SAGA format
 gdalUtils::gdalwarp(paste0(pd_gi_input,inputFile),paste0(pd_gi_run,"rt_dem.sdat"), overwrite=TRUE,  of='SAGA') 
 
+# (SAGA) import DEM to saga
 # ***NOTE1*** same as before using saga_cmd
 # ***NOTE2*** if you use a SAGA Version < 2.14 you have to change the call to:
 #            system(paste0(sagaCmd, ' io_gdal "GDAL: Import Raster"',
 #            ' -GRIDS=', pd_gi_run,'rt_dem.sgrd',
 #            ' -FILES=',pd_gi_input,inputFile,
 #            ' -INTERPOL=4'))
-
-# (SAGA) import DEM to saga 
+## (SAGA 3.0.0) 
+# ***NOTE3*** All params that are set to zero must be ommitted!
 system(paste0(sagaCmd," io_gdal 0",
-              " -GRIDS ", pd_gi_run,"rt_dem.sgrd",
-              " -TRANSFORM 0",
-              " -FILES ",pd_gi_input,inputFile,
-              " -INTERPOL 0")
+              " -GRIDS=", pd_gi_run,"rt_dem.sgrd",
+              " -FILES=",pd_gi_input,inputFile)
 )
 
 # (R) assign the input file to a R raster
