@@ -38,8 +38,26 @@ gdal<- initgdalUtils()
 initSAGA()
 
 ######### START of the thematic stuff ----------------------------------------
+# Basic Workflow Task 1 post filtering
+# 1) import DEM data
+# 2) calculate basic morphometry as needed for fuzzy landforms 
+# 3) classify landforms using the fuzzy landform algorithm
+# 4) filter result to get rid of noise (modal filter due to categorical variables)
+# 5) reclassify the landforms to plain (flat< 250 m ), plateau (flat>300 m) other (the rest)
 
-# here we start with the content and scientific stuff
+
+# Basic Workflow Task 2 pre filtering
+# 1) import DEM data
+# 2) filter dem to smooth areas (mean filter is the most straightforward approach)
+# 3) calculate basic morphometry as needed for fuzzy landforms 
+# 4) classify landforms using the fuzzy landform algorithm
+# 5) reclassify the landforms to plain (flat< 250 m ), plateau (flat>300 m) other (the rest)
+
+# TODO
+# define the kernel size parameters for filtering 
+# understand which output from the basic morphometry is used as input for fuzzy landform 
+# define the parameters used by fuzzy landforms 
+
 
 ######### setup the the variables for the script ------------------------------
 
