@@ -7,5 +7,5 @@ But more likely it is the attempt to support *non programmers* diving into spati
 ## References
 Find further information at:
 
-[Marburg Open Courseware - Advanced GIS](http://moc.environmentalinformatics-marburg.de/doku.php)
+[Marburg Open Courseware](http://moc.environmentalinformatics-marburg.de/doku.php)
 
