@@ -12,7 +12,9 @@
 ######### setup the environment -----------------------------------------------
 #########                       -----------------------------------------------
 # define project folder
-filepath_base<-"~/lehre/msc/active/msc-2016/msc-phygeo-class-of-2016-creuden/"
+
+filepath_base<-"D:/BEN/msc/msc-phygeo-class-of-2016-creuden/"
+
 
 # define the actual course session
 activeSession<-4
@@ -26,6 +28,9 @@ sourceFileNames <- list.files(pattern="[.]R$", path=paste0(filepath_base,"fun"),
 # source all functions
 res<- sapply(sourceFileNames, FUN=source)
 
+# if at a new location create filestructure
+createMocFolders(filepath_base)
+
 # get the global path variables for the current session
 getSessionPathes(filepath_git = filepath_base, sessNo = activeSession)
 
@@ -36,9 +41,11 @@ getSessionPathes(filepath_git = filepath_base, sessNo = activeSession)
 gdal<- initgdalUtils()
 
 # check SAGA binaries and export pathes to .envGlobal
-# ***NOTE*** c("C:\\OSGeo4W64\\apps\\saga","C:\\OSGeo4W64\\apps\\saga\\modules")
-#            is the default osgeo4w64 bit installation path
-#            it is strongly recommended to install SAGA standalone
+# ***NOTE1*** c("C:\\OSGeo4W64\\apps\\saga","C:\\OSGeo4W64\\apps\\saga\\modules")
+#             is the default osgeo4w64 bit installation path
+#             it is strongly recommended to install SAGA standalone
+# ***NOTE2*** if working on HRZ Marburg pool pc the initSAGA pathes 
+#             will be ignored because they are fixed coded in the function
 initSAGA(c("C:\\apps\\saga_3.0.0_x64","C:\apps\\saga_3.0.0_x64\\modules"))
 
 #########                       -----------------------------------------------
@@ -106,7 +113,8 @@ dem<-raster::raster(paste0(pd_gi_input,inputFile))
 
 
 ###  mean filter of the input file -----------------------------------------
-# *** NOTE *** we are using the parameter setting from above
+# ***NOTE1*** we are using the parameter setting from above
+# ***NOTE2*** this time R is performing the filtering significantly FASTER than SAGA
 # (R) mean filter very fast due to the mean calculation inside the filter matrix
 demf<- raster::focal(dem, w=matrix(1/(ksize*ksize)*1.0, nc=ksize, nr=ksize))
 
@@ -125,16 +133,16 @@ raster::plot(demf)
 
 # (SAGA) plot the results
 # ***NOTE*** we need to re-convert SAGA to raster
-gdalUtils::gdalwarp(paste0(pd_gi_run,"rt_fildem.sdat"),paste0(pd_gi_run,"rt_fildem.tif") , overwrite=TRUE)  
-demfSAGA<-raster::raster(paste0(pd_gi_run,"rt_fildem.tif"))
-raster::plot(demfSAGA$rt_fildem)
+gdalUtils::gdalwarp(paste0(pd_gi_run,"rt_fildemSAGA.sdat"),paste0(pd_gi_run,"rt_fildemSAGA.tif") , overwrite=TRUE)  
+demfSAGA<-raster::raster(paste0(pd_gi_run,"rt_fildemSAGA.tif"))
+raster::plot(demfSAGA$rt_fildemSAGA)
 
 ###  now caluating the standard morhpometry -----------------------------------
 # *** NOTE *** take care if you take the results from:
 # (1) SAGA "rt_fildemSAGA.sgrd" 
 # (2) R ("rt_fildemR.tif")
 system(paste0(sagaCmd," ta_morphometry 0 ",
-              "-ELEVATION ", pd_gi_run,"rt_fildem.sgrd ",
+              "-ELEVATION ", pd_gi_run,"rt_fildemSAGA.sgrd ",
               "-UNIT_SLOPE 1 ",
               "-UNIT_ASPECT 1 ",
               "-SLOPE ",pd_gi_run,"rt_slope.sgrd ", 
@@ -175,7 +183,7 @@ landformSAGA<-raster::raster(paste0(pd_gi_run,"rt_LANDFORM.tif"))
 ###  modal filter for smoothing the classified areas --------------------------
 
 # (SAGA) first using SAGA get rid of the noise
-system(paste0("saga_cmd grid_filter 6 ",
+system(paste0(sagaCmd," grid_filter 6 ",
               "-INPUT ",pd_gi_run,"rt_LANDFORM.sgrd ",
               "-MODE 0 ",
               "-RESULT ",pd_gi_run,"rt_modalSAGA.sgrd ",
@@ -184,7 +192,10 @@ system(paste0("saga_cmd grid_filter 6 ",
 
 
 # (R) same with R get rid of the noise
-landformModalR<- raster::focal(landformSAGA, w=matrix(k5_5, nc=msize, nr=msize),fun=raster::modal,na.rm = TRUE, pad = TRUE)
+
+# ***NOTE2*** this time R is performing the filtering significantly SLOWER than SAGA
+landformModalR<- raster::focal(landformSAGA, w=matrix(1, nc=msize, nr=msize),fun=raster::modal,na.rm = TRUE, pad = TRUE)
+
 
 
 ###  reclass to plain / plateau  ----------------------------------------------
