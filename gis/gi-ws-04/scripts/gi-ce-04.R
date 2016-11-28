@@ -112,7 +112,8 @@ dem<-raster::raster(paste0(pd_gi_input,inputFile))
 
 
 ###  mean filter of the input file -----------------------------------------
-# *** NOTE *** we are using the parameter setting from above
+# ***NOTE1*** we are using the parameter setting from above
+# ***NOTE2*** this time R is performing the filtering significantly FASTER than SAGA
 # (R) mean filter very fast due to the mean calculation inside the filter matrix
 demf<- raster::focal(dem, w=matrix(1/(ksize*ksize)*1.0, nc=ksize, nr=ksize))
 
@@ -131,16 +132,16 @@ raster::plot(demf)
 
 # (SAGA) plot the results
 # ***NOTE*** we need to re-convert SAGA to raster
-gdalUtils::gdalwarp(paste0(pd_gi_run,"rt_fildem.sdat"),paste0(pd_gi_run,"rt_fildem.tif") , overwrite=TRUE)  
-demfSAGA<-raster::raster(paste0(pd_gi_run,"rt_fildem.tif"))
-raster::plot(demfSAGA$rt_fildem)
+gdalUtils::gdalwarp(paste0(pd_gi_run,"rt_fildemSAGA.sdat"),paste0(pd_gi_run,"rt_fildemSAGA.tif") , overwrite=TRUE)  
+demfSAGA<-raster::raster(paste0(pd_gi_run,"rt_fildemSAGA.tif"))
+raster::plot(demfSAGA$rt_fildemSAGA)
 
 ###  now caluating the standard morhpometry -----------------------------------
 # *** NOTE *** take care if you take the results from:
 # (1) SAGA "rt_fildemSAGA.sgrd" 
 # (2) R ("rt_fildemR.tif")
 system(paste0(sagaCmd," ta_morphometry 0 ",
-              "-ELEVATION ", pd_gi_run,"rt_fildem.sgrd ",
+              "-ELEVATION ", pd_gi_run,"rt_fildemSAGA.sgrd ",
               "-UNIT_SLOPE 1 ",
               "-UNIT_ASPECT 1 ",
               "-SLOPE ",pd_gi_run,"rt_slope.sgrd ", 
@@ -181,7 +182,7 @@ landformSAGA<-raster::raster(paste0(pd_gi_run,"rt_LANDFORM.tif"))
 ###  modal filter for smoothing the classified areas --------------------------
 
 # (SAGA) first using SAGA get rid of the noise
-system(paste0("saga_cmd grid_filter 6 ",
+system(paste0(sagaCmd," grid_filter 6 ",
               "-INPUT ",pd_gi_run,"rt_LANDFORM.sgrd ",
               "-MODE 0 ",
               "-RESULT ",pd_gi_run,"rt_modalSAGA.sgrd ",
@@ -190,6 +191,7 @@ system(paste0("saga_cmd grid_filter 6 ",
 
 
 # (R) same with R get rid of the noise
+# ***NOTE2*** this time R is performing the filtering significantly SLOWER than SAGA
 landformModalR<- raster::focal(landformSAGA, w=matrix(1, nc=msize, nr=msize),fun=raster::modal,na.rm = TRUE, pad = TRUE)
 
 
