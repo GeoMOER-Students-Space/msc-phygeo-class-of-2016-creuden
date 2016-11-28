@@ -12,7 +12,7 @@
 ######### setup the environment -----------------------------------------------
 #########                       -----------------------------------------------
 # define project folder
-filepath_base<-"~/lehre/active/msc-phy-geo-2016/msc-phygeo-class-of-2016-creuden/"
+filepath_base<-"~/lehre/msc/active/msc-2016/msc-phygeo-class-of-2016-creuden/"
 
 # define the actual course session
 activeSession<-4
@@ -71,7 +71,6 @@ initSAGA(c("C:\\apps\\saga_3.0.0_x64","C:\apps\\saga_3.0.0_x64\\modules"))
 ksize<-3
 
 # kernelsize for smothing modal filter
-
 msize<-5
 
 #[FuzzyLf]
@@ -185,14 +184,14 @@ system(paste0("saga_cmd grid_filter 6 ",
 
 
 # (R) same with R get rid of the noise
-landformModalR<- raster::focal(landformSAGA, w=matrix(1, nc=msize, nr=msize),fun=raster::modal,na.rm = TRUE, pad = TRUE)
+landformModalR<- raster::focal(landformSAGA, w=matrix(k5_5, nc=msize, nr=msize),fun=raster::modal,na.rm = TRUE, pad = TRUE)
 
 
 ###  reclass to plain / plateau  ----------------------------------------------
 # *** NOTE *** take care if you take the results from:
 # (1) SAGA  not exported yet
 # (2) R ("landformModalR")
-flat<-raster::reclassify(landformSAGA, c(0,99,0, 99,100,1,100,200,0 ))
+flat<-raster::reclassify(landformModalR, c(0,99,0, 99,100,1,100,200,0 ))
 
 # finally reclass it according to fixed altitude tresholds
 flat[flat==1 & dem>300]<-3  
