@@ -12,7 +12,7 @@
 ######### setup the environment -----------------------------------------------
 #########                       -----------------------------------------------
 # define project folder
-filepath_base<-"~/lehre/active/msc-phy-geo-2016/msc-phygeo-class-of-2016-creuden/"
+filepath_base<-"D:/BEN/msc/msc-phygeo-class-of-2016-creuden/"
 
 # define the actual course session
 activeSession<-4
@@ -26,6 +26,9 @@ sourceFileNames <- list.files(pattern="[.]R$", path=paste0(filepath_base,"fun"),
 # source all functions
 res<- sapply(sourceFileNames, FUN=source)
 
+# if at a new location create filestructure
+createMocFolders(filepath_base)
+
 # get the global path variables for the current session
 getSessionPathes(filepath_git = filepath_base, sessNo = activeSession)
 
@@ -36,9 +39,11 @@ getSessionPathes(filepath_git = filepath_base, sessNo = activeSession)
 gdal<- initgdalUtils()
 
 # check SAGA binaries and export pathes to .envGlobal
-# ***NOTE*** c("C:\\OSGeo4W64\\apps\\saga","C:\\OSGeo4W64\\apps\\saga\\modules")
-#            is the default osgeo4w64 bit installation path
-#            it is strongly recommended to install SAGA standalone
+# ***NOTE1*** c("C:\\OSGeo4W64\\apps\\saga","C:\\OSGeo4W64\\apps\\saga\\modules")
+#             is the default osgeo4w64 bit installation path
+#             it is strongly recommended to install SAGA standalone
+# ***NOTE2*** if working on HRZ Marburg pool pc the initSAGA pathes 
+#             will be ignored because they are fixed coded in the function
 initSAGA(c("C:\\apps\\saga_3.0.0_x64","C:\apps\\saga_3.0.0_x64\\modules"))
 
 #########                       -----------------------------------------------
