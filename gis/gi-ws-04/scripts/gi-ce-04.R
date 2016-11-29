@@ -160,6 +160,26 @@ system(paste0(sagaCmd," ta_morphometry 0 ",
 # PLAIN     , 100  # PIT       , 111  # PEAK      , 122  # RIDGE     , 120  # CHANNEL   , 101	
 # SADDLE    , 121	# BSLOPE    ,   0	# FSLOPE    ,  10	# SSLOPE    ,  20	# HOLLOW    ,   1	
 # FHOLLOW   ,  11	# SHOLLOW   ,  21	# SPUR      ,   2	# FSPUR     ,  12	# SSPUR     ,  22	
+# type       map name		meaning
+# type       PLAIN		plain (membership)
+# type       PIT		pit (membership)
+# type       PEAK		peak (membership)
+# type       RIDGE		ridge (membership)
+# type       CHANNEL		channel (membership)
+# type       SADDLE		saddele (membership)
+# type       BSLOPE		backslope (membership)
+# type       FSLOPE		foot slope (membership)
+# type       SSLOPE		shoulder slope (membership)
+# type       HOLLOW		hollow (membership)
+# type       FHOLLOW		foot hollow (membership)
+# type       SHOLLOW		shoulder hollow (membership)
+# type       SPUR		spur (membership)
+# type       FSPUR		foot spur (membership)
+# type       SSPUR		shoulder spur (membership)
+# type       OUT		form (from maximum membership)
+# type       MEM		maximum membership
+# type       ENT		entropy
+# https://data.nodc.noaa.gov/coris/library/NOAA/CRCP/other/other_crcp_publications/PIBHMC/linkages_project_methods_final.pdf
 system(paste0(sagaCmd," ta_morphometry 25 ",
               "-SLOPE "  ,pd_gi_run,"rt_slope.sgrd ", 
               "-MINCURV ",pd_gi_run,"rt_mincurve.sgrd ",
