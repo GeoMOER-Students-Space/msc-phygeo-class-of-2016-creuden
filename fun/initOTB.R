@@ -17,10 +17,12 @@
 #'
 #'
 
-initOTB <- function(defaultOtb = "C:\\OSGeo4W64\\bin"){
+initOTB <- function(defaultOtb = "C:\\OSGeo4W64\\bin",installationRoot="C:\\OSGeo4W64"){
   
   if (substr(Sys.getenv("COMPUTERNAME"),1,5)=="PCRZP") {
     defaultOtb <- shQuote("C:\\Program Files\\QGIS 2.14\\bin")
+    Sys.setenv(GEOTIFF_CSV=paste0(Sys.getenv("OSGEO4W_ROOT"),"\\share\\epsg_csv"),envir = .GlobalEnv)
+    
   }
   
   # (R) set pathes  of otb modules and binaries depending on OS  
@@ -28,6 +30,10 @@ initOTB <- function(defaultOtb = "C:\\OSGeo4W64\\bin"){
   if(Sys.info()["sysname"] == "Windows"){
     makGlobalVar("otbPath", paste0(defaultOtb,"\\"))
     add2Path(defaultOtb)
+
+    Sys.setenv(OSGEO4W_ROOT=installationRoot)
+    Sys.setenv(GEOTIFF_CSV=paste0(Sys.getenv("OSGEO4W_ROOT"),"\\share\\epsg_csv"),envir = .GlobalEnv)
+    
   } else {
     makGlobalVar("otbPath", "(usr/bin/")
    }
