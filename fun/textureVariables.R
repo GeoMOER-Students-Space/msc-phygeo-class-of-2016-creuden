@@ -87,11 +87,11 @@ textureVariables <- function(x,
         glcm_filter[[j]]<-foreach(i=nrasters,
                                   .packages= c("glcm","raster"))%dopar%{
                                     glcm(x[[i]], 
-                                              window = c(filter[j], filter[j]), 
-                                              shift=shift,
-                                              statistics=stats,n_grey=n_grey,
-                                              min_x=min_x[i],max_x=max_x[i],
-                                              na_opt="center")
+                                         window = c(filter[j], filter[j]), 
+                                         shift=shift,
+                                         statistics=stats,n_grey=n_grey,
+                                         min_x=min_x[i],max_x=max_x[i],
+                                         na_opt="center")
                                   } 
       } else {
         glcm_filter[[j]]<-foreach(i=nrasters,
@@ -201,11 +201,11 @@ otbHaraTex<- function(input=NULL,
         command<-paste(command, " -parameters.max ",parameters.minmax[2])
         command<-paste(command, " -parameters.nbbin ",parameters.nbbin)
         command<-paste(command, " -texture ",texture)
-        for(i in channel){
-          cat("\nexecute ", command[i],"\n")
-          system(command[i]) 
-        }
-         
+        
+        cat("\nexecute ", command[band],"\n")
+        system(command[band]) 
+        
+        
       }
     }
   }
@@ -227,34 +227,33 @@ otbHaraTex<- function(input=NULL,
 #' otblocalStat(input=paste0(pd_rs_aerial,"test.tif"),radius=5)
 
 otblocalStat<- function(input=NULL,
-                      out="localStat",
-                      ram="8192",
-                      radius=3,
-                      channel=NULL){
+                        out="localStat",
+                        ram="8192",
+                        radius=3,
+                        channel=NULL){
   
   directory<-dirname(input)
   if (is.null(channel)) channel<-seq(length(grep(gdalUtils::gdalinfo(input,nomd = TRUE),pattern = "Band ")))
   for (band in channel) {
-        outName<-paste0(directory, "/",
-                        "band_",
-                        band,
-                        "_",
-                        out,
-                        "_",
-                        radius,
-                        ".tif")
-        
-        command<-paste0(otbPath,"otbcli_LocalStatisticExtraction")
-        command<-paste(command, " -in ", input)
-        command<-paste(command, " -channel ", channel)
-        command<-paste(command, " -out ", outName)
-        command<-paste(command, " -ram ",ram)
-        command<-paste(command, " -radius ",radius)
-        for(i in channel){
-          cat("\nexecute ", command[i],"\n")
-          system(command[i]) 
-        }
-      }
+    outName<-paste0(directory, "/",
+                    "band_",
+                    band,
+                    "_",
+                    out,
+                    "_",
+                    radius,
+                    ".tif")
+    
+    command<-paste0(otbPath,"otbcli_LocalStatisticExtraction")
+    command<-paste(command, " -in ", input)
+    command<-paste(command, " -channel ", channel)
+    command<-paste(command, " -out ", outName)
+    command<-paste(command, " -ram ",ram)
+    command<-paste(command, " -radius ",radius)
+    cat("\nexecute ", command[band],"\n")
+    system(command[band]) 
+    
+  }
 }
 
 
@@ -276,12 +275,12 @@ otblocalStat<- function(input=NULL,
 #' otblocalStat(input=paste0(pd_rs_aerial,"test.tif"),radius=5)
 
 otbedge<- function(input=NULL,
-                        out="edge",
-                        ram="8192",
-                        filter="gradient",
-                        filter.touzi.xradius=1,
-                        filter.touzi.yradius=1,
-                        channel=NULL){
+                   out="edge",
+                   ram="8192",
+                   filter="gradient",
+                   filter.touzi.xradius=1,
+                   filter.touzi.yradius=1,
+                   channel=NULL){
   
   directory<-dirname(input)
   if (is.null(channel)) channel<-seq(length(grep(gdalUtils::gdalinfo(input,nomd = TRUE),pattern = "Band ")))
@@ -305,10 +304,8 @@ otbedge<- function(input=NULL,
     }
     command<-paste(command, " -out ", outName)
     command<-paste(command, " -ram ",ram)
-    for(i in channel){
-      cat("\nexecute ", command[i],"\n")
-      system(command[i]) 
-    }
+    cat("\nexecute ", command[band],"\n")
+    system(command[band]) 
   }
 }
 
@@ -332,13 +329,13 @@ otbedge<- function(input=NULL,
 #' otbgraymorpho(input=paste0(pd_rs_aerial,"test.tif"))
 
 otbgraymorpho<- function(input=NULL,
-                   out="edge",
-                   ram="8192",
-                   filter="dilate",
-                   structype="ball",
-                   structype.ball.xradius=5,
-                   structype.ball.yradius=5,
-                   channel=NULL){
+                         out="edge",
+                         ram="8192",
+                         filter="dilate",
+                         structype="ball",
+                         structype.ball.xradius=5,
+                         structype.ball.yradius=5,
+                         channel=NULL){
   
   directory<-dirname(input)
   if (is.null(channel)) channel<-seq(length(grep(gdalUtils::gdalinfo(input,nomd = TRUE),pattern = "Band ")))
@@ -364,9 +361,7 @@ otbgraymorpho<- function(input=NULL,
     }
     command<-paste(command, " -out ", outName)
     command<-paste(command, " -ram ",ram)
-    for(i in channel){
-      cat("\nexecute ", command[i],"\n")
-      system(command[i]) 
-    }  
+    cat("\nexecute ", command[band],"\n")
+    system(command[band]) 
   }
 }
