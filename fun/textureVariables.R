@@ -250,7 +250,10 @@ otblocalStat<- function(input=NULL,
         command<-paste(command, " -out ", outName)
         command<-paste(command, " -ram ",ram)
         command<-paste(command, " -radius ",radius)
-        system(command)  
+        for(i in channel){
+          cat("\nexecute ", command[i],"\n")
+          system(command[i]) 
+        }
       }
 }
 
@@ -302,7 +305,10 @@ otbedge<- function(input=NULL,
     }
     command<-paste(command, " -out ", outName)
     command<-paste(command, " -ram ",ram)
-    system(command)  
+    for(i in channel){
+      cat("\nexecute ", command[i],"\n")
+      system(command[i]) 
+    }
   }
 }
 
@@ -358,6 +364,9 @@ otbgraymorpho<- function(input=NULL,
     }
     command<-paste(command, " -out ", outName)
     command<-paste(command, " -ram ",ram)
-    system(command)  
+    for(i in channel){
+      cat("\nexecute ", command[i],"\n")
+      system(command[i]) 
+    }  
   }
 }
