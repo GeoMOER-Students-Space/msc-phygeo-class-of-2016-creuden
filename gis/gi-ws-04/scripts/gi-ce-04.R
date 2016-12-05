@@ -8,11 +8,13 @@
 #
 # see also: https://github.com/logmoc/msc-phygeo-class-of-2016-creuden
 
-
+#########                       -----------------------------------------------
 ######### setup the environment -----------------------------------------------
-
+#########                       -----------------------------------------------
 # define project folder
-filepath_base<-"~/lehre/active/msc-phy-geo-2016/msc-phygeo-class-of-2016-creuden/"
+
+filepath_base<-"D:/BEN/msc/msc-phygeo-class-of-2016-creuden/"
+
 
 # define the actual course session
 activeSession<-4
@@ -26,11 +28,15 @@ sourceFileNames <- list.files(pattern="[.]R$", path=paste0(filepath_base,"fun"),
 # source all functions
 res<- sapply(sourceFileNames, FUN=source)
 
+# if at a new location create filestructure
+createMocFolders(filepath_base)
+
 # get the global path variables for the current session
 getSessionPathes(filepath_git = filepath_base, sessNo = activeSession)
 
+#########                       -----------------------------------------------
 ######### initialize the external GIS packages --------------------------------
-
+#########                       -----------------------------------------------
 # check GDAL binaries and start gdalUtils
 gdal<- initgdalUtils()
 
@@ -40,7 +46,9 @@ gdal<- initgdalUtils()
 #            it is strongly recommended to install SAGA standalone
 initSAGA(c("C:\\apps\\saga_3.0.0_x64","C:\apps\\saga_3.0.0_x64\\tools"))
 
+#########                       -----------------------------------------------
 ######### START of the thematic stuff ----------------------------------------
+#########                       -----------------------------------------------
 # Basic Workflow Task 1 post filtering
 # 1) import DEM data
 # 2) calculate basic morphometry as needed for fuzzy landforms 
@@ -61,14 +69,13 @@ initSAGA(c("C:\\apps\\saga_3.0.0_x64","C:\apps\\saga_3.0.0_x64\\tools"))
 # understand which output from the basic morphometry is used as input for fuzzy landform 
 # define the parameters used by fuzzy landforms 
 
-
+#########                       -----------------------------------------------
 ######### setup the the variables for the script ------------------------------
-
+#########                       -----------------------------------------------
 # kernelsize for smoothing (meanfilter)
 ksize<-3
 
 # kernelsize for smothing modal filter
-
 msize<-5
 
 #[FuzzyLf]
@@ -78,6 +85,9 @@ t_slope_max<- 10.0
 t_curve_min<-  0.00000001
 t_curve_max<-  0.0001
 
+#########                       -----------------------------------------------
+######### start core script     -----------------------------------------------
+#########                       -----------------------------------------------
 
 # (GDAL) gdalwarp is used to convert the data format from tif to SAGA format
 gdalUtils::gdalwarp(paste0(pd_gi_input,inputFile),paste0(pd_gi_run,"rt_dem.sdat"), overwrite=TRUE,  of='SAGA') 
@@ -101,7 +111,8 @@ dem<-raster::raster(paste0(pd_gi_input,inputFile))
 
 
 ###  mean filter of the input file -----------------------------------------
-# *** NOTE *** we are using the parameter setting from above
+# ***NOTE1*** we are using the parameter setting from above
+# ***NOTE2*** this time R is performing the filtering significantly FASTER than SAGA
 # (R) mean filter very fast due to the mean calculation inside the filter matrix
 demf<- raster::focal(dem, w=matrix(1/(ksize*ksize)*1.0, nc=ksize, nr=ksize))
 
@@ -120,16 +131,16 @@ raster::plot(demf)
 
 # (SAGA) plot the results
 # ***NOTE*** we need to re-convert SAGA to raster
-gdalUtils::gdalwarp(paste0(pd_gi_run,"rt_fildem.sdat"),paste0(pd_gi_run,"rt_fildem.tif") , overwrite=TRUE)  
-demfSAGA<-raster::raster(paste0(pd_gi_run,"rt_fildem.tif"))
-raster::plot(demfSAGA$rt_fildem)
+gdalUtils::gdalwarp(paste0(pd_gi_run,"rt_fildemSAGA.sdat"),paste0(pd_gi_run,"rt_fildemSAGA.tif") , overwrite=TRUE)  
+demfSAGA<-raster::raster(paste0(pd_gi_run,"rt_fildemSAGA.tif"))
+raster::plot(demfSAGA$rt_fildemSAGA)
 
 ###  now caluating the standard morhpometry -----------------------------------
 # *** NOTE *** take care if you take the results from:
 # (1) SAGA "rt_fildemSAGA.sgrd" 
 # (2) R ("rt_fildemR.tif")
 system(paste0(sagaCmd," ta_morphometry 0 ",
-              "-ELEVATION ", pd_gi_run,"rt_fildem.sgrd ",
+              "-ELEVATION ", pd_gi_run,"rt_fildemSAGA.sgrd ",
               "-UNIT_SLOPE 1 ",
               "-UNIT_ASPECT 1 ",
               "-SLOPE ",pd_gi_run,"rt_slope.sgrd ", 
@@ -147,6 +158,26 @@ system(paste0(sagaCmd," ta_morphometry 0 ",
 # PLAIN     , 100  # PIT       , 111  # PEAK      , 122  # RIDGE     , 120  # CHANNEL   , 101	
 # SADDLE    , 121	# BSLOPE    ,   0	# FSLOPE    ,  10	# SSLOPE    ,  20	# HOLLOW    ,   1	
 # FHOLLOW   ,  11	# SHOLLOW   ,  21	# SPUR      ,   2	# FSPUR     ,  12	# SSPUR     ,  22	
+# type       map name		meaning
+# type       PLAIN		plain (membership)
+# type       PIT		pit (membership)
+# type       PEAK		peak (membership)
+# type       RIDGE		ridge (membership)
+# type       CHANNEL		channel (membership)
+# type       SADDLE		saddele (membership)
+# type       BSLOPE		backslope (membership)
+# type       FSLOPE		foot slope (membership)
+# type       SSLOPE		shoulder slope (membership)
+# type       HOLLOW		hollow (membership)
+# type       FHOLLOW		foot hollow (membership)
+# type       SHOLLOW		shoulder hollow (membership)
+# type       SPUR		spur (membership)
+# type       FSPUR		foot spur (membership)
+# type       SSPUR		shoulder spur (membership)
+# type       OUT		form (from maximum membership)
+# type       MEM		maximum membership
+# type       ENT		entropy
+# https://data.nodc.noaa.gov/coris/library/NOAA/CRCP/other/other_crcp_publications/PIBHMC/linkages_project_methods_final.pdf
 system(paste0(sagaCmd," ta_morphometry 25 ",
               "-SLOPE "  ,pd_gi_run,"rt_slope.sgrd ", 
               "-MINCURV ",pd_gi_run,"rt_mincurve.sgrd ",
@@ -170,7 +201,7 @@ landformSAGA<-raster::raster(paste0(pd_gi_run,"rt_LANDFORM.tif"))
 ###  modal filter for smoothing the classified areas --------------------------
 
 # (SAGA) first using SAGA get rid of the noise
-system(paste0("saga_cmd grid_filter 6 ",
+system(paste0(sagaCmd," grid_filter 6 ",
               "-INPUT ",pd_gi_run,"rt_LANDFORM.sgrd ",
               "-MODE 0 ",
               "-RESULT ",pd_gi_run,"rt_modalSAGA.sgrd ",
@@ -179,14 +210,17 @@ system(paste0("saga_cmd grid_filter 6 ",
 
 
 # (R) same with R get rid of the noise
+
+# ***NOTE2*** this time R is performing the filtering significantly SLOWER than SAGA
 landformModalR<- raster::focal(landformSAGA, w=matrix(1, nc=msize, nr=msize),fun=raster::modal,na.rm = TRUE, pad = TRUE)
+
 
 
 ###  reclass to plain / plateau  ----------------------------------------------
 # *** NOTE *** take care if you take the results from:
 # (1) SAGA  not exported yet
 # (2) R ("landformModalR")
-flat<-raster::reclassify(landformSAGA, c(0,99,0, 99,100,1,100,200,0 ))
+flat<-raster::reclassify(landformModalR, c(0,99,0, 99,100,1,100,200,0 ))
 
 # finally reclass it according to fixed altitude tresholds
 flat[flat==1 & dem>300]<-3  

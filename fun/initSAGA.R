@@ -20,6 +20,10 @@
 
 initSAGA <- function(defaultSAGA = c("C:\\OSGeo4W64\\apps\\saga","C:\\OSGeo4W64\\apps\\saga\\modules")){
   
+  if (substr(Sys.getenv("COMPUTERNAME"),1,5)=="PCRZP") {
+   defaultSAGA <- shQuote(c("C:\\Program Files\\QGIS 2.14\\apps\\saga","C:\\Program Files\\QGIS 2.14\\apps\\saga\\modules"))
+  }
+  
   # (R) set pathes  of SAGA modules and binaries depending on OS  
   exist<-FALSE
   if(Sys.info()["sysname"] == "Windows"){
