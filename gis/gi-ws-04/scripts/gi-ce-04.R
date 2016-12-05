@@ -38,7 +38,7 @@ gdal<- initgdalUtils()
 # ***NOTE*** c("C:\\OSGeo4W64\\apps\\saga","C:\\OSGeo4W64\\apps\\saga\\modules")
 #            is the default osgeo4w64 bit installation path
 #            it is strongly recommended to install SAGA standalone
-initSAGA(c("C:\\apps\\saga_3.0.0_x64","C:\apps\\saga_3.0.0_x64\\modules"))
+initSAGA(c("C:\\apps\\saga_3.0.0_x64","C:\apps\\saga_3.0.0_x64\\tools"))
 
 ######### START of the thematic stuff ----------------------------------------
 # Basic Workflow Task 1 post filtering
