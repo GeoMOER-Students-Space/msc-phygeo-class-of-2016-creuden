@@ -188,7 +188,7 @@ otbHaraTex<- function(input=NULL,
                         xyoff[2],
                         ".tif")
         
-        command<-"otbcli_HaralickTextureExtraction"
+        command<-paste0(otbPath,"otbcli_HaralickTextureExtraction")
         command<-paste(command, " -in ", input)
         command<-paste(command, " -channel ", channel)
         command<-paste(command, " -out ", outName)
@@ -201,7 +201,11 @@ otbHaraTex<- function(input=NULL,
         command<-paste(command, " -parameters.max ",parameters.minmax[2])
         command<-paste(command, " -parameters.nbbin ",parameters.nbbin)
         command<-paste(command, " -texture ",texture)
-        system(command)  
+        for(i in channel){
+          cat("\nexecute ", command[i],"\n")
+          system(command[i]) 
+        }
+         
       }
     }
   }
@@ -240,7 +244,7 @@ otblocalStat<- function(input=NULL,
                         radius,
                         ".tif")
         
-        command<-"otbcli_LocalStatisticExtraction"
+        command<-paste0(otbPath,"otbcli_LocalStatisticExtraction")
         command<-paste(command, " -in ", input)
         command<-paste(command, " -channel ", channel)
         command<-paste(command, " -out ", outName)
@@ -288,7 +292,7 @@ otbedge<- function(input=NULL,
                     out,
                     ".tif")
     
-    command<-"otbcli_EdgeExtraction"
+    command<-paste0(otbPath,"otbcli_EdgeExtraction")
     command<-paste(command, " -in ", input)
     command<-paste(command, " -channel ", channel)
     command<-paste(command, " -filter ", filter)
@@ -344,7 +348,7 @@ otbgraymorpho<- function(input=NULL,
                     out,
                     ".tif")
     
-    command<-"otbcli_GrayScaleMorphologicalOperation"
+    command<-paste0(otbPath,"otbcli_GrayScaleMorphologicalOperation")
     command<-paste(command, " -in ", input)
     command<-paste(command, " -channel ", channel)
     command<-paste(command, " -filter ", filter)
