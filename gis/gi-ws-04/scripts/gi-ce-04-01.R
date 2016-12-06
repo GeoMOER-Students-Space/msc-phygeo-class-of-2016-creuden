@@ -2,13 +2,13 @@
 ######### setup the environment -----------------------------------------------
 # define project folder
 
-filepath_base<-"/home/creu/lehre/msc/active/msc-2016/msc-phygeo-class-of-2016-creuden/"
+filepath_base<-"C:/Users/creu/Documents/lehre/active/msc-phy-geo-2016/msc-phygeo-class-of-2016-creuden/"
 
 # define the actual course session
-activeSession<-4
+activeSession<-5
 
 # define the used input file(s)
-inputFile<- "geonode-las_dtm_01m.tif"
+inputFile<- "test.tif"
 
 # make a list of all functions in the corresponding function folder
 sourceFileNames <- list.files(pattern="[.]R$", path=paste0(filepath_base,"fun"), full.names=TRUE)
@@ -20,7 +20,7 @@ res<- sapply(sourceFileNames, FUN=source)
 createMocFolders(filepath_base)
 
 # get the global path variables for the current session
-getSessionPathes(filepath_git = filepath_base, sessNo = activeSession)
+getSessionPathes(filepath_git = filepath_base, sessNo = activeSession,courseCode = "rs")
 
 # set working directory
 setwd(pd_gi_run)

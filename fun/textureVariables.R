@@ -127,13 +127,13 @@ textureVariables <- function(x,
 #' the textures are calculated
 #' @param parameters.xyoff  vector containg the directional offsets. Valid combinations are: list(c(1,1),c(1,0),c(0,1),c(1,-1))
 #' @param n_grey Number of grey values. 
-#' @param parallel A logical value indicating whether parameters are calculated 
-#' parallely or not
+#' @param parallel A logical value indicating whether parameters are calculated parallely or not
 #' @param parameters.minmax   minimum/maximum gray value which can occur. 
 #' @param parameters.nbbin number of gray level bins (classes)
 #' @param texture type of filter "simple" "advanced" "higher"
 #' @param channel sequence of bands to be processed
 #' @param ram reserved memory in MB
+#' @param retRaster boolean if TRUE a raster stack is returned
 #' @return A list of RasterStacks containing the texture parameters for each 
 #' combination of channel and filter  
 
@@ -219,6 +219,7 @@ otbHaraTex<- function(input=NULL,
 #' @param radius computational window in pixel
 #' @param channel sequence of bands to be processed
 #' @param ram reserved memory in MB
+#' @param retRaster boolean if TRUE a raster stack is returned
 #' @author Chris Reudenbach
 #' @export otblocalStat
 #' @examples 
@@ -269,6 +270,7 @@ otblocalStat<- function(input=NULL,
 #' @param filter.touzi.yradius y radius of the Touzi processing neighborhood (if filter==touzi) (default value is 1 pixel)
 #' @param channel sequence of bands to be processed
 #' @param ram reserved memory in MB
+#' @param retRaster boolean if TRUE a raster stack is returned
 #' @return list of geotiffs containing thelocal statistics for each channel 
 
 #' @author Chris Reudenbach
@@ -327,6 +329,7 @@ otbEdge<- function(input=NULL,
 #' @param structype.ball.yradius y the ball structuring element Y Radius (only if structype==ball)
 #' @param channel sequence of bands to be processed
 #' @param ram reserved memory in MB
+#' @param retRaster boolean if TRUE a raster stack is returned
 #' @return list of geotiffs containing thelocal statistics for each channel 
 
 #' @author Chris Reudenbach
@@ -335,7 +338,7 @@ otbEdge<- function(input=NULL,
 #' 
 #' otbGrayMorpho(input=paste0(pd_rs_aerial,"test.tif"))
 
-otbrayMorpho<- function(input=NULL,
+otbGrayMorpho<- function(input=NULL,
                          out="edge",
                          ram="8192",
                          filter="dilate",
