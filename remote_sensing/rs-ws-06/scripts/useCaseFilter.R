@@ -51,9 +51,9 @@ hara<- otbHaraTex(input=paste0(pd_rs_aerial,"test.tif"), texture="simple",retRas
 # standard stat
 stat<- otblocalStat(input=paste0(pd_rs_aerial,"test.tif"),radius=5,retRaster = TRUE)
 # two times edge
-otbedge(input=paste0(pd_rs_aerial,"test.tif"),filter = "touzi", filter.touzi.yradius = 5, filter.touzi.xradius = 5)
-otbedge(input=paste0(pd_rs_aerial,"test.tif"),filter = "sobel")
+otbEdge(input=paste0(pd_rs_aerial,"test.tif"),filter = "touzi", filter.touzi.yradius = 5, filter.touzi.xradius = 5)
+otbEdge(input=paste0(pd_rs_aerial,"test.tif"),filter = "sobel")
 # two times morpho
-otbgraymorpho(input=paste0(pd_rs_aerial,"test.tif"),structype = "cross")
-otbgraymorpho(input=paste0(pd_rs_aerial,"test.tif"),structype.ball.xradius = 5,structype.ball.yradius = 10)
+otbGrayMorpho(input=paste0(pd_rs_aerial,"test.tif"),structype = "cross")
+otbGrayMorpho(input=paste0(pd_rs_aerial,"test.tif"),structype.ball.xradius = 5,structype.ball.yradius = 10)
 
