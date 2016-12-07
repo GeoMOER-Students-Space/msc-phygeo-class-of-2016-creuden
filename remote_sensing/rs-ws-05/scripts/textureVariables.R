@@ -87,11 +87,11 @@ textureVariables <- function(x,
         glcm_filter[[j]]<-foreach(i=nrasters,
                                   .packages= c("glcm","raster"))%dopar%{
                                     glcm(x[[i]], 
-                                         window = c(filter[j], filter[j]), 
-                                         shift=shift,
-                                         statistics=stats,n_grey=n_grey,
-                                         min_x=min_x[i],max_x=max_x[i],
-                                         na_opt="center")
+                                              window = c(filter[j], filter[j]), 
+                                              shift=shift,
+                                              statistics=stats,n_grey=n_grey,
+                                              min_x=min_x[i],max_x=max_x[i],
+                                              na_opt="center")
                                   } 
       } else {
         glcm_filter[[j]]<-foreach(i=nrasters,
@@ -125,18 +125,19 @@ textureVariables <- function(x,
 #' @param out string pattern vor individual naming of the output file(s)
 #' @param parameters.xyrad list with the x and y radius in pixel indicating the kernel sizes for which 
 #' the textures are calculated
+#' @param 
 #' @param parameters.xyoff  vector containg the directional offsets. Valid combinations are: list(c(1,1),c(1,0),c(0,1),c(1,-1))
 #' @param n_grey Number of grey values. 
-#' @param parallel A logical value indicating whether parameters are calculated parallely or not
+#' @param parallel A logical value indicating whether parameters are calculated 
+#' parallely or not
 #' @param parameters.minmax   minimum/maximum gray value which can occur. 
 #' @param parameters.nbbin number of gray level bins (classes)
 #' @param texture type of filter "simple" "advanced" "higher"
 #' @param channel sequence of bands to be processed
 #' @param ram reserved memory in MB
-#' @param retRaster boolean if TRUE a raster stack is returned
 #' @return A list of RasterStacks containing the texture parameters for each 
 #' combination of channel and filter  
-
+#' @details 
 #' @author Chris Reudenbach
 #' @note include correlation the possibility to use only one shift param set
 #' # http://www.fp.ucalgary.ca/mhallbey/more_informaton.htm  
@@ -163,19 +164,16 @@ otbHaraTex<- function(input=NULL,
                       parameters.xyrad=list(c(1,1)),
                       parameters.xyoff=list(c(1,1)),
                       parameters.minmax=c(0,255),
-                      parameters.nbbin=8,
+                      parameters.nbbin=128,
                       texture="advanced",
-                      channel=NULL,
-                      retRaster=FALSE,
-                      outDir=NULL){
+                      channel=NULL){
   
-  directory<-getOutputDir(outDir)
-  retStack<-list()
+  directory<-dirname(input)
   if (is.null(channel)) channel<-seq(length(grep(gdalUtils::gdalinfo(input,nomd = TRUE),pattern = "Band ")))
   for (band in channel) {
     for (xyrad in parameters.xyrad) {
       for (xyoff in parameters.xyoff) {
-        outName<-paste0(directory,
+        outName<-paste0(directory, "/",
                         "band_",
                         band,
                         "_",
@@ -190,7 +188,7 @@ otbHaraTex<- function(input=NULL,
                         xyoff[2],
                         ".tif")
         
-        command<-paste0(otbPath,"otbcli_HaralickTextureExtraction")
+        command<-"otbcli_HaralickTextureExtraction"
         command<-paste(command, " -in ", input)
         command<-paste(command, " -channel ", channel)
         command<-paste(command, " -out ", outName)
@@ -203,14 +201,10 @@ otbHaraTex<- function(input=NULL,
         command<-paste(command, " -parameters.max ",parameters.minmax[2])
         command<-paste(command, " -parameters.nbbin ",parameters.nbbin)
         command<-paste(command, " -texture ",texture)
-        
-        cat("\nexecute ", command[band],"\n")
-        system(command[band]) 
-        if (retRaster) retStack[[band]]<-assign(paste0(tools::file_path_sans_ext(basename(outName)),"band_",band),raster::stack(outName))
+        system(command)  
       }
     }
   }
-  return(retStack)
 }
 
 #' Calculates local statistics for a given kernel size
@@ -220,7 +214,8 @@ otbHaraTex<- function(input=NULL,
 #' @param radius computational window in pixel
 #' @param channel sequence of bands to be processed
 #' @param ram reserved memory in MB
-#' @param retRaster boolean if TRUE a raster stack is returned
+#' @return list of geotiffs containing thelocal statistics for each channel 
+#' @details 
 #' @author Chris Reudenbach
 #' @export otblocalStat
 #' @examples 
@@ -228,38 +223,31 @@ otbHaraTex<- function(input=NULL,
 #' otblocalStat(input=paste0(pd_rs_aerial,"test.tif"),radius=5)
 
 otblocalStat<- function(input=NULL,
-                        out="localStat",
-                        ram="8192",
-                        radius=3,
-                        channel=NULL,
-                        retRaster=FALSE,
-                        outDir=NULL){
+                      out="localStat",
+                      ram="8192",
+                      radius=3,
+                      channel=NULL){
   
-  directory<-getOutputDir(outDir)
-  retStack<-list()
+  directory<-dirname(input)
   if (is.null(channel)) channel<-seq(length(grep(gdalUtils::gdalinfo(input,nomd = TRUE),pattern = "Band ")))
   for (band in channel) {
-    
-    outName<-paste0(directory,
-                    "band_",
-                    band,
-                    "_",
-                    out,
-                    "_",
-                    radius,
-                    ".tif")
-    
-    command<-paste0(otbPath,"otbcli_LocalStatisticExtraction")
-    command<-paste(command, " -in ", input)
-    command<-paste(command, " -channel ", channel)
-    command<-paste(command, " -out ", outName)
-    command<-paste(command, " -ram ",ram)
-    command<-paste(command, " -radius ",radius)
-    cat("\nexecute ", command[band],"\n")
-    system(command[band]) 
-    if (retRaster) retStack[[band]]<-assign(paste0(tools::file_path_sans_ext(basename(outName)),"band_",band),raster::stack(outName))
-  }
-  return(retStack)
+        outName<-paste0(directory, "/",
+                        "band_",
+                        band,
+                        "_",
+                        out,
+                        "_",
+                        radius,
+                        ".tif")
+        
+        command<-"otbcli_LocalStatisticExtraction"
+        command<-paste(command, " -in ", input)
+        command<-paste(command, " -channel ", channel)
+        command<-paste(command, " -out ", outName)
+        command<-paste(command, " -ram ",ram)
+        command<-paste(command, " -radius ",radius)
+        system(command)  
+      }
 }
 
 
@@ -272,30 +260,26 @@ otblocalStat<- function(input=NULL,
 #' @param filter.touzi.yradius y radius of the Touzi processing neighborhood (if filter==touzi) (default value is 1 pixel)
 #' @param channel sequence of bands to be processed
 #' @param ram reserved memory in MB
-#' @param retRaster boolean if TRUE a raster stack is returned
 #' @return list of geotiffs containing thelocal statistics for each channel 
-
+#' @details 
 #' @author Chris Reudenbach
 #' @export otbedge
 #' @examples 
 #' 
-#' otbEdge(input=paste0(pd_rs_aerial,"test.tif"),filter = "sobel")
+#' otblocalStat(input=paste0(pd_rs_aerial,"test.tif"),radius=5)
 
-otbEdge<- function(input=NULL,
-                   out="edge",
-                   ram="8192",
-                   filter="gradient",
-                   filter.touzi.xradius=1,
-                   filter.touzi.yradius=1,
-                   channel=NULL,
-                   retRaster=FALSE,
-                   outDir=NULL){
+otbedge<- function(input=NULL,
+                        out="edge",
+                        ram="8192",
+                        filter="gradient",
+                        filter.touzi.xradius=1,
+                        filter.touzi.yradius=1,
+                        channel=NULL){
   
-  directory<-getOutputDir(outDir)
-  retStack<-list()
+  directory<-dirname(input)
   if (is.null(channel)) channel<-seq(length(grep(gdalUtils::gdalinfo(input,nomd = TRUE),pattern = "Band ")))
   for (band in channel) {
-    outName<-paste0(directory,
+    outName<-paste0(directory, "/",
                     "band_",
                     band,
                     "_",
@@ -304,7 +288,7 @@ otbEdge<- function(input=NULL,
                     out,
                     ".tif")
     
-    command<-paste0(otbPath,"otbcli_EdgeExtraction")
+    command<-"otbcli_EdgeExtraction"
     command<-paste(command, " -in ", input)
     command<-paste(command, " -channel ", channel)
     command<-paste(command, " -filter ", filter)
@@ -314,11 +298,8 @@ otbEdge<- function(input=NULL,
     }
     command<-paste(command, " -out ", outName)
     command<-paste(command, " -ram ",ram)
-    cat("\nexecute ", command[band],"\n")
-    system(command[band])
-    if (retRaster) retStack[[band]]<-assign(paste0(tools::file_path_sans_ext(basename(outName)),"band_",band),raster::stack(outName))
+    system(command)  
   }
-  return(retStack)
 }
 
 
@@ -332,32 +313,27 @@ otbEdge<- function(input=NULL,
 #' @param structype.ball.yradius y the ball structuring element Y Radius (only if structype==ball)
 #' @param channel sequence of bands to be processed
 #' @param ram reserved memory in MB
-#' @param retRaster boolean if TRUE a raster stack is returned
 #' @return list of geotiffs containing thelocal statistics for each channel 
-
+#' @details 
 #' @author Chris Reudenbach
 #' @export otbgraymorpho
 #' @examples 
 #' 
-#' otbGrayMorpho(input=paste0(pd_rs_aerial,"test.tif"))
+#' otbgraymorpho(input=paste0(pd_rs_aerial,"test.tif"))
 
-otbGrayMorpho<- function(input=NULL,
-                         out="edge",
-                         ram="8192",
-                         filter="dilate",
-                         structype="ball",
-                         structype.ball.xradius=5,
-                         structype.ball.yradius=5,
-                         channel=NULL,
-                         retRaster=FALSE,
-                         outDir=NULL){
+otbgraymorpho<- function(input=NULL,
+                   out="edge",
+                   ram="8192",
+                   filter="dilate",
+                   structype="ball",
+                   structype.ball.xradius=5,
+                   structype.ball.yradius=5,
+                   channel=NULL){
   
-  directory<-getOutputDir(outDir)
-  retStack<-list()
-  
+  directory<-dirname(input)
   if (is.null(channel)) channel<-seq(length(grep(gdalUtils::gdalinfo(input,nomd = TRUE),pattern = "Band ")))
   for (band in channel) {
-    outName<-paste0(directory,
+    outName<-paste0(directory, "/",
                     "band_",
                     band,
                     "_",
@@ -368,7 +344,7 @@ otbGrayMorpho<- function(input=NULL,
                     out,
                     ".tif")
     
-    command<-paste0(otbPath,"otbcli_GrayScaleMorphologicalOperation")
+    command<-"otbcli_GrayScaleMorphologicalOperation"
     command<-paste(command, " -in ", input)
     command<-paste(command, " -channel ", channel)
     command<-paste(command, " -filter ", filter)
@@ -378,20 +354,6 @@ otbGrayMorpho<- function(input=NULL,
     }
     command<-paste(command, " -out ", outName)
     command<-paste(command, " -ram ",ram)
-    cat("\nexecute ", command[band],"\n")
-    system(command[band])
-    if (retRaster) retStack[[band]]<-assign(paste0(tools::file_path_sans_ext(basename(outName)),"band_",band),raster::stack(outName))
+    system(command)  
   }
-  return(retStack)
-}
-
-getOutputDir<- function (outDir){
-  if (!is.null(outDir)) {
-    otbOutputDir<-outDir
-    if (!file.exists(paste0(otbOutputDir, "/texture/"))) dir.create(file.path(paste0(otbOutputDir, "/texture/")), recursive = TRUE)
-  } else {
-    otbOutputDir<-paste0(getwd(),"/texture/")
-    if (!file.exists(paste0(otbOutputDir, "/texture/"))) dir.create(file.path(paste0(otbOutputDir, "/texture/")), recursive = TRUE)
-  }
-  return(otbOutputDir)
 }
