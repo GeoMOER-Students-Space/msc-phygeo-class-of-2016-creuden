@@ -88,9 +88,9 @@ rgbI<- function(rgb,
   resultStack<-raster::stack(red,green,blue)
   names(resultStack) <- c("red","green","blue")
   for (item in rgbi) {
-    ## calculate vvi
+    ## calculate Visible Vegetation Index vvi
     if (item=="VVI"){
-      cat("calculate VVI")
+      cat("\ncalculate Visible Vegetation Index (VVI)")
       VVI <- (1 - abs((red - 30) / (red + 30))) * 
         (1 - abs((green - 50) / (green + 50))) * 
         (1 - abs((blue - 1) / (blue + 1)))
@@ -98,71 +98,80 @@ rgbI<- function(rgb,
       names(resultStack) <- c(names(resultStack)[1:length(names(resultStack))-1],"VVI")
       
     } else if (item=="VARI"){
-      # calculate VARI
-      cat("calculate VARI")
+      # calculate Visible Atmospherically Resistant Index (VARI)
+      cat("\ncalculate Visible Atmospherically Resistant Index (VARI)")
       VARI<-(green-red)/(green+red-blue)
       resultStack<-  raster::stack(resultStack,VARI)
       names(resultStack) <- c(names(resultStack)[1:length(names(resultStack))-1],"VARI")
       
     } else if (item=="NDTI"){
       ## Normalized difference turbidity index
+      cat("\ncalculate Normalized difference turbidity index (NDTI)")
       NDTI<-(red-green)/(red+green)
       resultStack<-  raster::stack(resultStack,NDTI)
       names(resultStack) <- c(names(resultStack)[1:length(names(resultStack))-1],"NDTI")
-      cat("calculate NDTI")
+      
     } else if (item=="RI"){
       # redness index
+      cat("\ncalculate redness index (RI)")
       RI<-red**2/(blue*green**3)
       resultStack<-  raster::stack(resultStack,RI)
       names(resultStack) <- c(names(resultStack)[1:length(names(resultStack))-1],"RI")
-      cat("calculate RI")
+      
     } else if (item=="CI"){
       # CI Soil Colour Index
+      cat("\ncalculate Soil Colour Index (CI)")
       CI<-(red-green)/(red+green)
       resultStack<-  raster::stack(resultStack,CI)
       names(resultStack) <- c(names(resultStack)[1:length(names(resultStack))-1],"CI")
-      cat("calculate CI")
+      
     } else if (item=="BI"){
       #  Brightness Index
+      cat("\ncalculate Brightness Index (BI)")
       BI<-sqrt((red**2+green**2+blue*2)/3)
       resultStack<-  raster::stack(resultStack,BI)
       names(resultStack) <- c(names(resultStack)[1:length(names(resultStack))-1],"BI")
-      cat("calculate BI")
+      
     } else if (item=="SI"){
       # SI Spectra Slope Saturation Index
+      cat("\ncalculate Spectra Slope Saturation Index (SI)")
       SI<-(red-blue)/(red+blue) 
       resultStack<-  raster::stack(resultStack,SI)
       names(resultStack) <- c(names(resultStack)[1:length(names(resultStack))-1],"SI")
-      cat("calculate SI")
+      
     } else if (item=="HI"){    
       # HI Primary colours Hue Index
+      cat("\ncalculate Primary colours Hue Index (HI)")
       HI<-(2*red-green-blue)/(green-blue)
       resultStack<-  raster::stack(resultStack,HI)
       names(resultStack) <- c(names(resultStack)[1:length(names(resultStack))-1],"HI")
-      cat("calculate HI")
+      
     } else if (item=="TGI"){
       # Triangular greenness index
+      cat("\ncalculate Triangular greenness index (TGI)")
       TGI <- -0.5*(190*(red - green)- 120*(red - blue))
       resultStack<-  raster::stack(resultStack,TGI)
       names(resultStack) <- c(names(resultStack)[1:length(names(resultStack))-1],"TGI")
-      cat("calculate TGI")
+      
     } else if (item=="GLI"){
+      cat("\ncalculate Green leaf index (GLI)")
       # Green leaf index
       GLI<-(2*green-red-blue)/(2*green+red+blue)
       resultStack<-  raster::stack(resultStack,GLI)
       names(resultStack) <- c(names(resultStack)[1:length(names(resultStack))-1],"GLI")
-      cat("calculate GLI")
+      
     } else if (item=="NGRDI"){
-      # NGRDINormalized green red difference index 
+      # NGRDI Normalized green red difference index 
+      cat("\ncalculate Normalized green red difference index  (NGRI)")
       NGRDI<-(green-red)/(green+red) 
       resultStack<-  raster::stack(resultStack,NGRDI)
       names(resultStack) <- c(names(resultStack)[1:length(names(resultStack))-1],"NGRI")
-      cat("calculate NGRI")
+      
     }  
     
   }
   
- if (writeTif) raster::writeRaster(x = resultStack,filename = paste0(outDir,outName,".tif"))
+ if (writeTif) raster::writeRaster(x = resultStack,filename = paste0(outDir,"\\",outName,".tif"),overwrite=TRUE)
   ## return rgbi
   return(resultStack)
 }
