@@ -60,13 +60,17 @@ if (!isGeneric('rgbi')) {
 #' dFile <- download.file(url, "Image.jpg")
 #' img <- stack("Image.jpg") 
 #' plotRGB(img)
-#' rgbI <- rgbi(img)
+#' rgbi <- rgbI(img)
 #' plot(rgbI, col = gray(255:0/255))
 #' 
 #' @export rgbi
 #' 
 
-rgbi<- function(rgb,rgbi=c("red","green","blue","VVI","VARI","NDTI","RI","CI","BI","SI","HI","TGI","GLI","NGRDI")) {
+rgbI<- function(rgb,
+                rgbi=c("red","green","blue","VVI","VARI","NDTI","RI","CI","BI","SI","HI","TGI","GLI","NGRDI"),
+                writeTif=FALSE,
+                outDir=getwd(),
+                outName="rgbi") {
   
   ### prerequisites
   
@@ -158,7 +162,7 @@ rgbi<- function(rgb,rgbi=c("red","green","blue","VVI","VARI","NDTI","RI","CI","B
     
   }
   
-  raster::writeRaster(x = resultStack)
+ if (writeTif) raster::writeRaster(x = resultStack,filename = paste0(outDir,outName,".tif"))
   ## return rgbi
   return(resultStack)
 }
