@@ -1,4 +1,4 @@
-#'@name initGrass4R '@title initializes enviroment for using \link{rgrass7} with GRASS 
+ #'@name initGrass4R '@title initializes enviroment for using \link{rgrass7} with GRASS 
 #'@description Function that initializes environment and pathes for GRASS7x. '
 #'Despite the GRASS GIS seup is performed by the initGRASS() funtion of the
 #'\link{rgrass7} package, there are some workarounds necessary. 

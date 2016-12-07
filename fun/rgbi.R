@@ -5,13 +5,15 @@ if (!isGeneric('rgbi')) {
 #' RGB indices 
 #' 
 #' @description
-#' This function calculates various spectral indices from a RGB 
+#' This function calculates various spectral indices from a RGB. It returns at least red green and blue as splitted channels in a stack. Additionally you can choose RGB indices.
 #' \code{Raster*} object.  
 #' 
-#' @param rgb A \code{RasterStack} or \code{RasterBrick} object. 3
-#' bands are mandatory (usually red, green and blue).
+#' @param rgb a \code{RasterStack} or \code{RasterBrick} object. 3
+#' bands are mandatory (for RGB indices they should be: "red", "green" and "blue").
+#' @param rgbi the implemented RGB indices currently \link{seealso}
 
 #' @return 
+#' @seealso 
 #' A \code{RasterLayer} with the index calculates as:\cr
 #' VARI (green-red)/(green+red-blue). A Visible Atmospherically Resistant Index (VARI)\cr
 #' BI  sqrt((R**2+G**2+B*2)/3 Brightness Index\cr
@@ -29,7 +31,7 @@ if (!isGeneric('rgbi')) {
 
 #' 
 #' @author
-#' Chris Reudenbach, (VVI) Florian Detsch, (VVI) Tim Appelhans
+#' Chris Reudenbach
 #' 
 #' @references
 #' 
@@ -69,7 +71,7 @@ rgbi<- function(rgb,rgbi=c("red","green","blue","VVI","VARI","NDTI","RI","CI","B
   ### prerequisites
   
   ## compatibility check
-  if (nlayers(rgb) < 3)
+  if (raster::nlayers(rgb) < 3)
     stop("Argument 'rgb' needs to be a Raster* object with at least 3 layers (usually red, green and blue).")
   
   ### processing
@@ -79,50 +81,84 @@ rgbi<- function(rgb,rgbi=c("red","green","blue","VVI","VARI","NDTI","RI","CI","B
   red <- rgb[[1]]
   green <- rgb[[2]]
   blue <- rgb[[3]]
-  
+  resultStack<-raster::stack(red,green,blue)
+  names(resultStack) <- c("red","green","blue")
   for (item in rgbi) {
     ## calculate vvi
     if (item=="VVI"){
+      cat("calculate VVI")
       VVI <- (1 - abs((red - 30) / (red + 30))) * 
         (1 - abs((green - 50) / (green + 50))) * 
         (1 - abs((blue - 1) / (blue + 1)))
+      resultStack<-  raster::stack(resultStack,VVI)
+      names(resultStack) <- c(names(resultStack)[1:length(names(resultStack))-1],"VVI")
+      
     } else if (item=="VARI"){
       # calculate VARI
+      cat("calculate VARI")
       VARI<-(green-red)/(green+red-blue)
+      resultStack<-  raster::stack(resultStack,VARI)
+      names(resultStack) <- c(names(resultStack)[1:length(names(resultStack))-1],"VARI")
+      
     } else if (item=="NDTI"){
       ## Normalized difference turbidity index
       NDTI<-(red-green)/(red+green)
+      resultStack<-  raster::stack(resultStack,NDTI)
+      names(resultStack) <- c(names(resultStack)[1:length(names(resultStack))-1],"NDTI")
+      cat("calculate NDTI")
     } else if (item=="RI"){
       # redness index
       RI<-red**2/(blue*green**3)
-    } else if (item=="ci"){
+      resultStack<-  raster::stack(resultStack,RI)
+      names(resultStack) <- c(names(resultStack)[1:length(names(resultStack))-1],"RI")
+      cat("calculate RI")
+    } else if (item=="CI"){
       # CI Soil Colour Index
       CI<-(red-green)/(red+green)
+      resultStack<-  raster::stack(resultStack,CI)
+      names(resultStack) <- c(names(resultStack)[1:length(names(resultStack))-1],"CI")
+      cat("calculate CI")
     } else if (item=="BI"){
       #  Brightness Index
       BI<-sqrt((red**2+green**2+blue*2)/3)
+      resultStack<-  raster::stack(resultStack,BI)
+      names(resultStack) <- c(names(resultStack)[1:length(names(resultStack))-1],"BI")
+      cat("calculate BI")
     } else if (item=="SI"){
       # SI Spectra Slope Saturation Index
       SI<-(red-blue)/(red+blue) 
+      resultStack<-  raster::stack(resultStack,SI)
+      names(resultStack) <- c(names(resultStack)[1:length(names(resultStack))-1],"SI")
+      cat("calculate SI")
     } else if (item=="HI"){    
       # HI Primary colours Hue Index
       HI<-(2*red-green-blue)/(green-blue)
+      resultStack<-  raster::stack(resultStack,HI)
+      names(resultStack) <- c(names(resultStack)[1:length(names(resultStack))-1],"HI")
+      cat("calculate HI")
     } else if (item=="TGI"){
       # Triangular greenness index
-      TGI <- -0.5*(190*(red - green)- 120(red - blue))
+      TGI <- -0.5*(190*(red - green)- 120*(red - blue))
+      resultStack<-  raster::stack(resultStack,TGI)
+      names(resultStack) <- c(names(resultStack)[1:length(names(resultStack))-1],"TGI")
+      cat("calculate TGI")
     } else if (item=="GLI"){
       # Green leaf index
       GLI<-(2*green-red-blue)/(2*green+red+blue)
+      resultStack<-  raster::stack(resultStack,GLI)
+      names(resultStack) <- c(names(resultStack)[1:length(names(resultStack))-1],"GLI")
+      cat("calculate GLI")
     } else if (item=="NGRDI"){
       # NGRDINormalized green red difference index 
       NGRDI<-(green-red)/(green+red) 
+      resultStack<-  raster::stack(resultStack,NGRDI)
+      names(resultStack) <- c(names(resultStack)[1:length(names(resultStack))-1],"NGRI")
+      cat("calculate NGRI")
     }  
     
   }
-  ## return rgbi
   
-  result <- stack(red,green,blue,VVI,VARI,NDTI,RI,CI,BI,SI,HI,TGI,GLI,NGRDI)
-  result<-  stack(eval(rgbi))
-  names(result) <- c("red","green","blue","VVI","VARI","NDTI","RI","CI","BI","SI","HI","TGI","GLI","NGRDI")
-  return(result)
+  raster::writeRaster(x = resultStack)
+  ## return rgbi
+  return(resultStack)
 }

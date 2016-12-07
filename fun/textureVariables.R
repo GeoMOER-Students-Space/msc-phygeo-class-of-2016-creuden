@@ -265,7 +265,7 @@ otblocalStat<- function(input=NULL,
 
 #' Calculates edges for a given kernel size
 #' 
-#' @param input of GeoTiff containing 1 ore more gray value bands
+#' @param input of GeoTiff containing 1 ore more gray value band(s)
 #' @param out the output mono band image containing the edge features
 #' @param filter the choice of edge detection method (gradient/sobel/touzi)
 #' @param filter.touzi.xradius x radius of the Touzi processing neighborhood (if filter==touzi) (default value is 1 pixel)
