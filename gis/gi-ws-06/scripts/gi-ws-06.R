@@ -36,6 +36,21 @@ gdal<- initgdalUtils()
 
 initSAGA(c("/usr/local/bin","/usr/local/lib"))
 
+######### START of the thematic stuff ----------------------------------------
+
+# 1) Preprocessing DEM 
+#    -> Fill Sinks wang & Liu
+#    <- filled DEM
+#    <- local drainage network
+#    <- watershed
+#  2) calculate  catchments parallel approach
+#   -> filled DEM
+#   <- catchment area
+#  3) identify opslope area (= catchment area) for a given position 
+#     with respect to the bigger valley structure
+#     - buffer posion for a rough estimate of gauge position
+#  4) calculate upslope area
+
 ######## set vars ------------------------------------------------------------
 
 # gauge position
