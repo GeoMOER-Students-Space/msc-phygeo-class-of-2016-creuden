@@ -1,4 +1,4 @@
-# gi-ws-05 main control script 
+# gi-ws-06 main control script 
 # MOC - Advanced GIS (T. Nauss, C. Reudenbach)
 #
 # calculate the basic watershed and catchment parameters and returns the catchment of a given gauge level
@@ -9,7 +9,7 @@
 filepath_base<-"C:/Users/creu/Documents/lehre/active/msc-phy-geo-2016/msc-phygeo-class-of-2016-creuden/"
 
 # define the actual course session
-activeSession<-5
+activeSession<-6
 
 # define the used input file(s)
 inputFile<- "geonode-las_dtm_01m.tif"
