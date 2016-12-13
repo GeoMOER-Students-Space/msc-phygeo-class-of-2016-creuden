@@ -6,7 +6,7 @@
 ######### setup the environment -----------------------------------------------
 # define project folder
 
-filepath_base<-"C:/Users/creu/Documents/lehre/active/msc-phy-geo-2016/msc-phygeo-class-of-2016-creuden/"
+filepath_base<-"~/lehre/msc/active/msc-2016/msc-phygeo-class-of-2016-creuden/"
 
 # define the actual course session
 activeSession<-6
@@ -57,17 +57,8 @@ coordinates(gauge) <- ~ x + y
 projection(gauge) <- CRS("+init=epsg:4326")
 
 # (R) reproject it
-gauge <- spTransform(gauge, CRS("+init=epsg:25832"))
+estGauge <- spTransform(gauge, CRS("+init=epsg:25832"))
 
-# the gauge position is not very accurate- a straightforward buffering approach may help to find the correct outlet/gauge position
-# (R) buffer the gauge point for finding the  maximum  catchment value within 25 m radius
-gaugeBuffer <- as.data.frame(raster::extract(catchmentarea, gauge, buffer = 25, cellnumbers = T)[[1]])
-
-# (R) get the id of maxpos
-id <- gaugeBuffer$cell[which.max(gaugeBuffer$value)]
-
-# (R) get the posistion that is estimated to be the gauge
-gaugeLoc <- xyFromCell(dem, id)
 
 
 # (GDAL) convert the TIF to SAGA format
@@ -94,6 +85,16 @@ gdalUtils::gdalwarp(paste0(pd_gi_run,"rt_catchmentarea.sdat"),
                     overwrite=TRUE) 
 # (R) 
 catchmentarea<-raster::raster(paste0(pd_gi_run,"rt_catchmentarea.tif"))
+
+# the gauge position is not very accurate- a straightforward buffering approach may help to find the correct outlet/gauge position
+# (R) buffer the gauge point for finding the  maximum  catchment value within 25 m radius
+gaugeBuffer <- as.data.frame(raster::extract(catchmentarea, estGauge, buffer = 25, cellnumbers = T)[[1]])
+
+# (R) get the id of maxpos
+id <- gaugeBuffer$cell[which.max(gaugeBuffer$value)]
+
+# (R) get the posistion that is estimated to be the gauge
+gaugeLoc <- xyFromCell(dem, id)
 
 
 # (SAGA) calculate upslope area
