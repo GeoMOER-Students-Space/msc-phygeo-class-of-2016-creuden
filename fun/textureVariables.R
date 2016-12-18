@@ -20,30 +20,36 @@
 #' the maximum value from the rasterLayer is used.
 #' @return A list of RasterStacks containing the texture parameters for each 
 #' combination of channel and filter  
-#' @details This functions fills the glcm function with standard settings used 
-#' for the rainfall retrieval
+#' @details This functions calls the glcm function from \link{glcm} with standard settings
 #' @author Hanna Meyer
-#' @note include correlation the possibility to use only one shift param set
-#' # http://www.fp.ucalgary.ca/mhallbey/more_informaton.htm  
-#' # Homogeneity is correlated with Contrast,  r = -0.80
-#' # Homogeneity is correlated with Dissimilarity, r = -0.95
-#' # GLCM Variance is correlated with Contrast,  r= 0.89
-#' # GLCM Variance is correlated with Dissimilarity,  r= 0.91
-#' # GLCM Variance is correlated with Homogeneity,  r= -0.83
-#' # Entropy is correlated with ASM,  r= -0.87
-#' # GLCM Mean and Correlation are more independent. For the same image,
-#' # GLCM Mean shows  r< 0.1 with any of the other texture measures demonstrated in this tutorial.
-#' # GLCM Correlation shows  r<0.5 with any other measure.
+#' @note More information at the texture tutorial site of
+#' \link{http://www.fp.ucalgary.ca/mhallbey/more_informaton.htm}(Mryka Hall-Beyer)
+#' Keep in mind that:\cr
+#' Homogeneity is correlated with Contrast,  r = -0.80
+#' Homogeneity is correlated with Dissimilarity, r = -0.95
+#' GLCM Variance is correlated with Contrast,  r= 0.89
+#' GLCM Variance is correlated with Dissimilarity,  r= 0.91
+#' GLCM Variance is correlated with Homogeneity,  r= -0.83
+#' Entropy is correlated with ASM,  r= -0.87
+#' GLCM Mean and Correlation are more independent. For the same image,
+#' GLCM Mean shows  r< 0.1 with any of the other texture measures demonstrated in this tutorial.
+#' GLCM Correlation shows  r<0.5 with any other measure.
 #' @export textureVariables
 #' @examples 
 #' 
-#' ## example on how to calculate texture from a list of msg channels
+#' ## example on how to calculate texture from a list of channels
 #' 
-#' #'# stack the msg scenes:
-#' msg_example <-getChannels(inpath=system.file("extdata/msg",package="Rainfall"))
-#'  
+#' #https://commons.wikimedia.org/wiki/User:Nepenthes
+#' url<-"http://media.kaveldun.com/2016/01/desert.jpg"
+#' res <- curl::curl_download(url, "image.jpg")
+#' img<-readJPEG("image.jpg")
+#' red<-raster::raster(img[,ncol(img):1,1])
+#' green<-raster::raster(img[,ncol(img):1,2])
+#' blue<-raster::raster(img[,ncol(img):1,3])
+#' r<-raster::stack(x = c(red,green,blue))
+#' 
 #' #calculate texture
-#' result <- textureVariables(msg_example,nrasters=1:3,
+#' result <- textureVariables(r,nrasters=1:3,
 #' stats=c("mean", "variance", "homogeneity"))
 #' 
 #' #plot the results from VIS0.6 channel:
@@ -143,22 +149,24 @@ textureVariables <- function(x,
 #' combination of channel and filter  
 
 #' @author Chris Reudenbach
-#' @note include correlation the possibility to use only one shift param set
-#' # http://www.fp.ucalgary.ca/mhallbey/more_informaton.htm  
-#' # Homogeneity is correlated with Contrast,  r = -0.80
-#' # Homogeneity is correlated with Dissimilarity, r = -0.95
-#' # GLCM Variance is correlated with Contrast,  r= 0.89
-#' # GLCM Variance is correlated with Dissimilarity,  r= 0.91
-#' # GLCM Variance is correlated with Homogeneity,  r= -0.83
-#' # Entropy is correlated with ASM,  r= -0.87
-#' # GLCM Mean and Correlation are more independent. For the same image,
-#' # GLCM Mean shows  r< 0.1 with any of the other texture measures demonstrated in this tutorial.
-#' # GLCM Correlation shows  r<0.5 with any other measure.
+#' @note More information at the texture tutorial site of
+#' \link{http://www.fp.ucalgary.ca/mhallbey/more_informaton.htm}(Mryka Hall-Beyer)
+#' Keep in mind that:\cr
+#' Homogeneity is correlated with Contrast,  r = -0.80
+#' Homogeneity is correlated with Dissimilarity, r = -0.95
+#' GLCM Variance is correlated with Contrast,  r= 0.89
+#' GLCM Variance is correlated with Dissimilarity,  r= 0.91
+#' GLCM Variance is correlated with Homogeneity,  r= -0.83
+#' Entropy is correlated with ASM,  r= -0.87
+#' GLCM Mean and Correlation are more independent. For the same image,
+#' GLCM Mean shows  r< 0.1 with any of the other texture measures demonstrated in this tutorial.
+#' GLCM Correlation shows  r<0.5 with any other measure.
 #' @export otbHaraTex
 #' @examples 
-#' 
-#' otbHaraTex(input=paste0(pd_rs_aerial,"test.tif"),
-#' texture="simple")
+#' url<-"http://www.ldbv.bayern.de/file/zip/5619/DOP%2040_CIR.zip"
+#' res <- curl::curl_download(url, "testdata.zip")
+#' unzip(res,junkpaths = TRUE,overwrite = TRUE)
+#' otbHaraTex(input=paste0(getwd(),"4490600_5321400.tif"),texture="simple")
 
 
 
@@ -235,8 +243,10 @@ otbHaraTex<- function(input=NULL,
 #' @author Chris Reudenbach
 #' @export otblocalStat
 #' @examples 
-#' 
-#' otblocalStat(input=paste0(pd_rs_aerial,"test.tif"),radius=5)
+#' url<-"http://www.ldbv.bayern.de/file/zip/5619/DOP%2040_CIR.zip"
+#' res <- curl::curl_download(url, "testdata.zip")
+#' unzip(res,junkpaths = TRUE,overwrite = TRUE)
+#' otblocalStat(input=paste0(getwd(),"4490600_5321400.tif"),radius=5)
 
 otblocalStat<- function(input=NULL,
                         out="localStat",
@@ -296,8 +306,11 @@ otblocalStat<- function(input=NULL,
 #' @author Chris Reudenbach
 #' @export otbedge
 #' @examples 
-#' 
-#' otbEdge(input=paste0(pd_rs_aerial,"test.tif"),filter = "sobel")
+#' url<-"http://www.ldbv.bayern.de/file/zip/5619/DOP%2040_CIR.zip"
+#' res <- curl::curl_download(url, "testdata.zip")
+#' unzip(res,junkpaths = TRUE,overwrite = TRUE)
+#' otbedge(input=paste0(getwd(),"4490600_5321400.tif"),filter = "sobel")
+
 
 otbEdge<- function(input=NULL,
                    out="edge",
@@ -363,8 +376,11 @@ otbEdge<- function(input=NULL,
 #' @author Chris Reudenbach
 #' @export otbgraymorpho
 #' @examples 
-#' 
-#' otbGrayMorpho(input=paste0(pd_rs_aerial,"test.tif"))
+#' url<-"http://www.ldbv.bayern.de/file/zip/5619/DOP%2040_CIR.zip"
+#' res <- curl::curl_download(url, "testdata.zip")
+#' unzip(res,junkpaths = TRUE,overwrite = TRUE)
+#' gm<-otbGrayMorpho(input=paste0(getwd(),"4490600_5321400.tif"),retRaster = TRUE)
+#' raster::plot(gm[[1]])
 
 otbGrayMorpho<- function(input=NULL,
                          out="edge",
