@@ -49,14 +49,28 @@ initOTB(otbType="osgeo4w64OTB")
 #                                  "second_moment", "correlation"),
 #                          parallel=TRUE,
 #                          n_grey = 8 )
+
+# calculate rgbi
+rgbi <- rgbI(img,writeTif = TRUE,outDir = pd_rs_aerial_rgbi)
+rgbi_file<-    list.files(pattern="rgbi", path=paste0(pd_rs_aerial_rgbi), full.names=TRUE)
+
 # haralick  
-hara<- otbHaraTex(input=paste0(pd_rs_aerial,"test.tif"), texture="simple",retRaster = TRUE)
+hara<- otbHaraTex(input=rgbi_file, texture="advanced",retRaster = TRUE,outDir = pd_rs_aerial_texture)
 # standard stat
-stat<- otblocalStat(input=paste0(pd_rs_aerial,"test.tif"),radius=5,retRaster = TRUE)
+stat<- otblocalStat(input=rgbi_file, radius=3,retRaster = TRUE,outDir = pd_rs_aerial_texture)
 # two times edge
-touzi<- otbEdge(input=paste0(pd_rs_aerial,"test.tif"),filter = "touzi", filter.touzi.yradius = 5, filter.touzi.xradius = 5,retRaster = TRUE)
-sobel<- otbEdge(input=paste0(pd_rs_aerial,"test.tif"),filter = "sobel",retRaster = TRUE)
+#touzi<- otbEdge(input=rgbi_file, filter = "touzi", filter.touzi.yradius = 5, filter.touzi.xradius = 5,retRaster = TRUE,outDir = pd_rs_aerial_texture)
+sobel<- otbEdge(input=rgbi_file, filter = "sobel",retRaster = TRUE,outDir = pd_rs_aerial_texture)
 # two times morpho
-gmc<- otbGrayMorpho(input=paste0(pd_rs_aerial,"test.tif"),structype = "cross",retRaster = TRUE)
-gmb<- otbGrayMorpho(input=paste0(pd_rs_aerial,"test.tif"),structype.ball.xradius = 5,structype.ball.yradius = 10,retRaster = TRUE)
+# gmc<- otbGrayMorpho(input=rgbi_file, structype = "cross",retRaster = TRUE,outDir = pd_rs_aerial_texture)
+# gmb<- otbGrayMorpho(input=rgbi_file, structype.ball.xradius = 5,structype.ball.yradius = 10,retRaster = TRUE,outDir = pd_rs_aerial_texture)
+
+
+# create a list for each band
+b1_textures <- list.files(pattern="band_1", path=paste0(pd_rs_aerial_texture), full.names=TRUE)
+b2_textures <- list.files(pattern="band_2", path=paste0(pd_rs_aerial_texture), full.names=TRUE)
+b3_textures <- list.files(pattern="band_3", path=paste0(pd_rs_aerial_texture), full.names=TRUE)
+
+# merge all tifs to one tif
+system(paste("gdal_merge.py -of GTiff   -o ", paste0(pd_rs_aerial,"merge.tif"), b1_tifFileNames,b2_tifFileNames,b3_tifFileNames,rgbi_file))
 

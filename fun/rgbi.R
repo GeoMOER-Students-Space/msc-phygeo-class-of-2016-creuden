@@ -171,7 +171,7 @@ rgbI<- function(rgb,
     
   }
   
- if (writeTif) raster::writeRaster(x = resultStack,filename = paste0(outDir,"\\",outName,".tif"),overwrite=TRUE)
+ if (writeTif) raster::writeRaster(x = resultStack,filename = paste0(outDir,outName,".tif"),overwrite=TRUE)
   ## return rgbi
   return(resultStack)
 }

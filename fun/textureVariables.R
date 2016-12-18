@@ -206,7 +206,12 @@ otbHaraTex<- function(input=NULL,
         
         cat("\nexecute ", command[band],"\n")
         system(command[band]) 
-        if (retRaster) retStack[[band]]<-assign(paste0(tools::file_path_sans_ext(basename(outName)),"band_",band),raster::stack(outName))
+        
+        if (length(unique(summary(raster::values(raster::stack(outName))))) > 6)  {
+          if (retRaster) retStack[[band]]<- assign(paste0("band_",band,"_",tools::file_path_sans_ext(basename(outName))),raster::stack(outName))
+        } else {
+          file.remove(outName) 
+          file.remove(paste0(outName,".aux.xml"),showWarnings = FALSE)}
       }
     }
   }
@@ -257,8 +262,12 @@ otblocalStat<- function(input=NULL,
     command<-paste(command, " -radius ",radius)
     cat("\nexecute ", command[band],"\n")
     system(command[band]) 
-    if (retRaster) retStack[[band]]<-assign(paste0(tools::file_path_sans_ext(basename(outName)),"band_",band),raster::stack(outName))
-  }
+    if (length(unique(summary(raster::values(raster::stack(outName))))) > 6)  {
+      if (retRaster) retStack[[band]]<- assign(paste0("band_",band,"_",tools::file_path_sans_ext(basename(outName))),raster::stack(outName))
+    } else {
+      file.remove(outName) 
+      file.remove(paste0(outName,".aux.xml"),showWarnings = FALSE)}
+      }
   return(retStack)
 }
 
@@ -316,7 +325,11 @@ otbEdge<- function(input=NULL,
     command<-paste(command, " -ram ",ram)
     cat("\nexecute ", command[band],"\n")
     system(command[band])
-    if (retRaster) retStack[[band]]<-assign(paste0(tools::file_path_sans_ext(basename(outName)),"band_",band),raster::stack(outName))
+    if (length(unique(summary(raster::values(raster::stack(outName))))) > 2)  {
+      if (retRaster) retStack[[band]]<- assign(paste0("band_",band,"_",tools::file_path_sans_ext(basename(outName))),raster::stack(outName))
+    } else {
+      file.remove(outName) 
+      file.remove(paste0(outName,".aux.xml"),showWarnings = FALSE)}
   }
   return(retStack)
 }
@@ -380,7 +393,11 @@ otbGrayMorpho<- function(input=NULL,
     command<-paste(command, " -ram ",ram)
     cat("\nexecute ", command[band],"\n")
     system(command[band])
-    if (retRaster) retStack[[band]]<-assign(paste0(tools::file_path_sans_ext(basename(outName)),"band_",band),raster::stack(outName))
+    if (length(unique(summary(raster::values(raster::stack(outName))))) > 2)  {
+      if (retRaster) retStack[[band]]<- assign(paste0("band_",band,"_",tools::file_path_sans_ext(basename(outName))),raster::stack(outName))
+    } else {
+      file.remove(outName)
+      file.remove(paste0(outName,".aux.xml"),showWarnings = FALSE)}
   }
   return(retStack)
 }
@@ -388,10 +405,10 @@ otbGrayMorpho<- function(input=NULL,
 getOutputDir<- function (outDir){
   if (!is.null(outDir)) {
     otbOutputDir<-outDir
-    if (!file.exists(paste0(otbOutputDir, "/texture/"))) dir.create(file.path(paste0(otbOutputDir, "/texture/")), recursive = TRUE)
+    if (!file.exists(otbOutputDir)) dir.create(file.path(otbOutputDir), recursive = TRUE)
   } else {
-    otbOutputDir<-paste0(getwd(),"/texture/")
-    if (!file.exists(paste0(otbOutputDir, "/texture/"))) dir.create(file.path(paste0(otbOutputDir, "/texture/")), recursive = TRUE)
+    otbOutputDir<-paste0(getwd(),"/texture")
+    if (!file.exists(paste0(otbOutputDir, "/texture"))) dir.create(file.path(paste0(otbOutputDir, "/texture")), recursive = TRUE)
   }
-  return(otbOutputDir)
+  return(paste0(otbOutputDir,"/"))
 }
