@@ -36,16 +36,16 @@ unzip(res,junkpaths = TRUE,overwrite = TRUE)
 inputFile<- "4490600_5321400.tif"
 
 ######### initialize the external GIS packages --------------------------------
-### NOTE providing the correct pathes will extremly speed up 
-###      the initialisation process
+### NOTE providing the correct pathes will extremly 
+###       speed up the initialisation process
 
 # check GDAL binaries and start gdalUtils
 gdal<- initgdalUtils()
 
-# initialize SAGA GIS bindings for SAGA 3.x
+# initialize SAGA GIS 
 initSAGA()
 
-# initialize OTB bindings for OSGeo4W64 default 
+# initialize OTB  
 initOTB()
 
 ######## start tests ------------------------------------------------------------
