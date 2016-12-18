@@ -19,12 +19,18 @@
 #' 
 #' 
 #'
-initgdalUtils <- function(){
+initgdalUtils <- function(searchPath=NULL){
   if (substr(Sys.getenv("COMPUTERNAME"),1,5)=="PCRZP") {
     gdalUtils::gdal_setInstallation(search_path = shQuote("C:/Program Files/QGIS 2.14/bin/"))
   } else {
+    if (is.null(searchPath)) {
+    cat("\nsearching for GDAL binaries - this will take a while\n")
+    cat("Alternatively you can provide a searchPath like: 'C:\\OSGeo4W64\\bin\\'\n")
   ## (gdalUtils) check for a valid GDAL binary installation on your system
   gdalUtils::gdal_setInstallation()
+    } else {
+      gdalUtils::gdal_setInstallation(search_path = shQuote(searchPath))
+    }
   }
   valid.install<-!is.null(getOption("gdalUtils_gdalPath"))
   if (!valid.install){
