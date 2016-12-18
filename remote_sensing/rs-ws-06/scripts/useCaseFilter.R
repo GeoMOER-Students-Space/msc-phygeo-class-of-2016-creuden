@@ -1,4 +1,7 @@
-# gi-ws-06 main control script 
+# rs-ws-06
+# MOC - Remote Sensing (T. Nauss, C. Reudenbach)
+# useCase control script for textureVariables
+#' 
 ######### setup the environment -----------------------------------------------
 # define project folder
 if(Sys.info()["sysname"] == "Windows"){

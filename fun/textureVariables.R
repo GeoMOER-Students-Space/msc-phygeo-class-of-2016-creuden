@@ -1,3 +1,6 @@
+# rs-ws-07
+# MOC - Advanced GIS/Remote Sensing (T. Nauss, C. Reudenbach)
+#' 
 #' Calculate selected texture parameters based on gray level properties
 #' @note a raster* object is required
 #' 

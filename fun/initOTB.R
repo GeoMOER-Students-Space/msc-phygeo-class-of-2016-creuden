@@ -1,3 +1,6 @@
+# rs-ws-07
+# MOC - Advanced GIS/Remote Sensing (T. Nauss, C. Reudenbach)
+#' 
 #'@name getOTB
 #'@title getOTB setup the orfeo toolbox bindings for an rsession
 #'@description  getOTB trys to find all valid OTB installation and returns the pathes and environment settings 

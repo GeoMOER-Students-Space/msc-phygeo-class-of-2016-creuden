@@ -1,5 +1,6 @@
-# gi-ws-05-1
-#' @description  MOC - Advanced GIS (T. Nauss, C. Reudenbach)
+# rs-ws-04
+# MOC - Advanced GIS (T. Nauss, C. Reudenbach)
+#' 
 #' initGIS check and initializes gdal binaries
 #'@return 
 #' a list of the complete capabilities of the current installed gdal version

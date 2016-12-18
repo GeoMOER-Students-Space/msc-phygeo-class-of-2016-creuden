@@ -1,4 +1,7 @@
-# gi-ws-04 main control script 
+# gi-ws-04
+# MOC - Advanced GIS (T. Nauss, C. Reudenbach)
+#'main control script
+#' 
 ######### setup the environment -----------------------------------------------
 # define project folder
 

@@ -1,5 +1,6 @@
-# rs-ws-05-1
-#' @description  MOC - Advanced GIS (T. Nauss, C. Reudenbach)
+# rs-ws-04-1
+# MOC - Advanced GIS/Remote Sensing/Data Analysis (T. Nauss, C. Reudenbach)
+#'
 #' setPathGlobal
 #'@return 
 #' defines and creates (if necessary) all folders variables
