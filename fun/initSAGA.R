@@ -14,7 +14,7 @@
 #'@example 
 #'
 #'## call it for a default OSGeo4W64 oinstallation of SAGA
-#'initSAGA(c("C:\\OSGeo4W64\\apps\\saga","C:\\OSGeo4W64\\apps\\saga\\modules"),)
+#'initSAGA(defaultSAGA=c("C:\\OSGeo4W64\\apps\\saga","C:\\OSGeo4W64\\apps\\saga\\modules"))
 #'
 #'
 
@@ -22,14 +22,29 @@ initSAGA <- function(defaultSAGA = NULL, DL = "C:", MP="/usr"){
   # (R) set pathes  of SAGA modules and binaries depending on OS  
   exist<-FALSE
   if(Sys.info()["sysname"] == "Windows"){
+    if (!is.null(defaultSAGA)) defaultSAGA<-data.frame(bin=defaultSAGA[1],lib=defaultSAGA[2])
     if (is.null(defaultSAGA)) defaultSAGA<- searchSAGA(DL = DL) 
-    makGlobalVar("sagaCmd", paste0(defaultSAGA[1],"\\saga_cmd.exe"))
-    makGlobalVar("sagaPath", defaultSAGA[1])
-    makGlobalVar("sagaModPath",  defaultSAGA[2])
-    
-    add2Path(defaultSAGA[1])
-    add2Path(defaultSAGA[2])
-    
+    if (nrow(defaultSAGA) > 1) {
+      cat("\nmore than 1 SAGA installation found: \n")
+      print(defaultSAGA,digits = 0)
+      cat("\n I will use the first one: ")
+      print(defaultSAGA[1,1],digits = 0)
+      
+      makGlobalVar("sagaCmd", paste0(defaultSAGA[1][1,],"saga_cmd.exe"))
+      makGlobalVar("sagaPath", defaultSAGA[1][1,])
+      makGlobalVar("sagaModPath",  defaultSAGA[2][1,])
+      
+      add2Path(defaultSAGA[1][1,])
+      add2Path(defaultSAGA[2][1,])
+      } else {
+        makGlobalVar("sagaCmd", paste0(defaultSAGA[1],"saga_cmd.exe"))
+        makGlobalVar("sagaPath", defaultSAGA[1])
+        makGlobalVar("sagaModPath",  defaultSAGA[2])
+        
+        add2Path(defaultSAGA[1])
+        add2Path(defaultSAGA[2])
+          
+      }
   } 
   # if Linux
   else {
@@ -44,8 +59,9 @@ initSAGA <- function(defaultSAGA = NULL, DL = "C:", MP="/usr"){
     makGlobalVar("sagaCmd", defaultSAGA[1])
     makGlobalVar("sagaPath", defaultSAGA[2] )
     makGlobalVar("sagaModPath",  defaultSAGA[3])
-                 add2Path(defaultSAGA[2])
-                 add2Path(defaultSAGA[3])
+    add2Path(defaultSAGA[2])
+    add2Path(defaultSAGA[3])
+                   
   }
 }
 
@@ -68,14 +84,14 @@ searchSAGA <- function(DL = "C:"){
   
   
   if (substr(Sys.getenv("COMPUTERNAME"),1,5)=="PCRZP") {
-      defaultSAGA <- shQuote(c("C:\\Program Files\\QGIS 2.14\\apps\\saga","C:\\Program Files\\QGIS 2.14\\apps\\saga\\modules"))
+    defaultSAGA <- shQuote(c("C:\\Program Files\\QGIS 2.14\\apps\\saga","C:\\Program Files\\QGIS 2.14\\apps\\saga\\modules"))
   } else {
     
     # trys to find a osgeo4w installation on the whole C: disk returns root directory and version name
     # recursive dir for otb*.bat returns all version of otb bat files
     cat("\nsearching for SAGA installations - this may take a while\n")
-    cat("Alternatively you can provide a path like: C:\\OSGeo4W64\\bin\\\n")
-    cat("You can also provide a installation type like: 'osgeo4w64OTB'\n")
+    cat('Alternatively you can provide a path like: \n')
+    cat('c("C:\\OSGeo4W64\\apps\\saga","C:\\OSGeo4W64\\apps\\saga\\modules")\n')
     rawSAGA <- system(paste0("cmd.exe /c dir /B /S ",DL,"\\","saga_cmd.exe"),intern = TRUE)
     
     # trys to identify valid otb installations and their version numbers
@@ -99,11 +115,16 @@ searchSAGA <- function(DL = "C:"){
         installerType<- "osgeo4wSAGA"
       }
       # if the the tag "QGIS" exists set installationType
-      else if (length(unique(grep(paste("QGIS", collapse = "|"), batchfileLines, value = TRUE))) > 0){
+      else if (length(unique(grep(paste("QGIS", collapse = "|"), rawSAGA[i], value = TRUE))) > 0){
         rootDir<-unique(grep(paste("QGIS", collapse = "|"), rawSAGA[i], value = TRUE))
         rootDir<- substr(rootDir,1, gregexpr(pattern = "saga_cmd.exe", rootDir)[[1]][1] - 1)
         installDir<-substr(rootDir,1, gregexpr(pattern = "bin", rootDir)[[1]][1] - 2)
         installerType<- "qgisSAGA"
+      } else {
+        rootDir<-unique(grep(paste("saga_", collapse = "|"), rawSAGA[i], value = TRUE))
+        rootDir<- substr(rootDir,1, gregexpr(pattern = "saga_cmd.exe", rootDir)[[1]][1] - 1)
+        installDir<-substr(rootDir,1, gregexpr(pattern = "bin", rootDir)[[1]][1] - 2)
+        installerType<- "UserSAGA"
       }
       
       # put the existing GISBASE directory, version number  and installation type in a data frame
