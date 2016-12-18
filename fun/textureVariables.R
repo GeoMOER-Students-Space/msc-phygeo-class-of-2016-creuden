@@ -1,7 +1,11 @@
 # rs-ws-07
 # MOC - Advanced GIS/Remote Sensing (T. Nauss, C. Reudenbach)
-#' 
-#' Calculate selected texture parameters based on gray level properties
+#
+# Calculate selected texture parameters based on gray level properties
+# You may also use the function as a blueprint to integrate other otb system calls
+# the first otb function haralick has some comments about the used concept of doing so
+# 
+# 
 #' @note a raster* object is required
 #' 
 #' @param x A rasterLayer or a rasterStack containing different channels
@@ -145,6 +149,7 @@ textureVariables <- function(x,
 #' @param channel sequence of bands to be processed
 #' @param ram reserved memory in MB
 #' @param retRaster boolean if TRUE a raster stack is returned
+#' @param verbose switch for system messages default is FALSE
 #' @return A list of RasterStacks containing the texture parameters for each 
 #' combination of channel and filter  
 
@@ -183,12 +188,19 @@ otbHaraTex<- function(input=NULL,
                       outDir=NULL,
                       verbose=FALSE){
   
+  # check and create output directories
   directory<-getOutputDir(outDir)
+  
+  # initialize the return raster stack
   retStack<-list()
+  # if no channel number is provided take all tif bands
   if (is.null(channel)) channel<-seq(length(grep(gdalUtils::gdalinfo(input,nomd = TRUE),pattern = "Band ")))
+  # for each band do
   for (band in channel) {
+    # the following filters
     for (xyrad in parameters.xyrad) {
       for (xyoff in parameters.xyoff) {
+        # generate the putputfilename
         outName<-paste0(directory,
                         "band_",
                         band,
@@ -203,8 +215,9 @@ otbHaraTex<- function(input=NULL,
                         xyoff[1],
                         xyoff[2],
                         ".tif")
-        
+        # start otb command generation with the valid path to otbcli and the module name
         command<-paste0(otbPath,"otbcli_HaralickTextureExtraction")
+        # now add all arguments
         command<-paste(command, " -in ", input)
         command<-paste(command, " -channel ", channel)
         command<-paste(command, " -out ", outName)
@@ -217,13 +230,13 @@ otbHaraTex<- function(input=NULL,
         command<-paste(command, " -parameters.max ",parameters.minmax[2])
         command<-paste(command, " -parameters.nbbin ",parameters.nbbin)
         command<-paste(command, " -texture ",texture)
-        
+        # if verbose is true
         if (verbose) {
           cat("\nrunning cmd:  ", command[band],"\n")
           system(command[band])}
         else{
           system(command[band],intern = TRUE,ignore.stdout = TRUE)}  
-        
+        # if you want to have a rasterstack returned do it
         if (retRaster) retStack[[band]]<-assign(paste0(tools::file_path_sans_ext(basename(outName)),"band_",band),raster::stack(outName))
       }
     }
@@ -240,6 +253,7 @@ otbHaraTex<- function(input=NULL,
 #' @param channel sequence of bands to be processed
 #' @param ram reserved memory in MB
 #' @param retRaster boolean if TRUE a raster stack is returned
+#' @param verbose switch for system messages default is FALSE
 #' @author Chris Reudenbach
 #' @export otblocalStat
 #' @examples 
@@ -301,6 +315,7 @@ otblocalStat<- function(input=NULL,
 #' @param channel sequence of bands to be processed
 #' @param ram reserved memory in MB
 #' @param retRaster boolean if TRUE a raster stack is returned
+#' @param verbose switch for system messages default is FALSE
 #' @return list of geotiffs containing thelocal statistics for each channel 
 
 #' @author Chris Reudenbach
@@ -371,6 +386,7 @@ otbEdge<- function(input=NULL,
 #' @param channel sequence of bands to be processed
 #' @param ram reserved memory in MB
 #' @param retRaster boolean if TRUE a raster stack is returned
+#' @param verbose switch for system messages default is FALSE
 #' @return list of geotiffs containing thelocal statistics for each channel 
 
 #' @author Chris Reudenbach
