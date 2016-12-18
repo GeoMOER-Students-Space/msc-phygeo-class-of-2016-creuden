@@ -167,7 +167,8 @@ otbHaraTex<- function(input=NULL,
                       texture="advanced",
                       channel=NULL,
                       retRaster=FALSE,
-                      outDir=NULL){
+                      outDir=NULL,
+                      verbose=FALSE){
   
   directory<-getOutputDir(outDir)
   retStack<-list()
@@ -204,8 +205,12 @@ otbHaraTex<- function(input=NULL,
         command<-paste(command, " -parameters.nbbin ",parameters.nbbin)
         command<-paste(command, " -texture ",texture)
         
-        cat("\nexecute ", command[band],"\n")
-        system(command[band]) 
+        if (verbose) {
+          cat("\nrunning cmd:  ", command[band],"\n")
+          system(command[band])}
+        else{
+          system(command[band],intern = TRUE,ignore.stdout = TRUE)}  
+        
         if (retRaster) retStack[[band]]<-assign(paste0(tools::file_path_sans_ext(basename(outName)),"band_",band),raster::stack(outName))
       }
     }
@@ -233,7 +238,8 @@ otblocalStat<- function(input=NULL,
                         radius=3,
                         channel=NULL,
                         retRaster=FALSE,
-                        outDir=NULL){
+                        outDir=NULL,
+                        verbose=FALSE){
   
   directory<-getOutputDir(outDir)
   retStack<-list()
@@ -255,8 +261,12 @@ otblocalStat<- function(input=NULL,
     command<-paste(command, " -out ", outName)
     command<-paste(command, " -ram ",ram)
     command<-paste(command, " -radius ",radius)
-    cat("\nexecute ", command[band],"\n")
-    system(command[band]) 
+    if (verbose) {
+      cat("\nrunning cmd:  ", command[band],"\n")
+      system(command[band])}
+    else{
+      system(command[band],intern = TRUE,ignore.stdout = TRUE)}  
+
     if (retRaster) retStack[[band]]<-assign(paste0(tools::file_path_sans_ext(basename(outName)),"band_",band),raster::stack(outName))
   }
   return(retStack)
@@ -289,7 +299,8 @@ otbEdge<- function(input=NULL,
                    filter.touzi.yradius=1,
                    channel=NULL,
                    retRaster=FALSE,
-                   outDir=NULL){
+                   outDir=NULL,
+                   verbose=FALSE){
   
   directory<-getOutputDir(outDir)
   retStack<-list()
@@ -314,8 +325,12 @@ otbEdge<- function(input=NULL,
     }
     command<-paste(command, " -out ", outName)
     command<-paste(command, " -ram ",ram)
-    cat("\nexecute ", command[band],"\n")
-    system(command[band])
+    if (verbose) {
+      cat("\nrunning cmd:  ", command[band],"\n")
+      system(command[band])}
+    else{
+      system(command[band],intern = TRUE,ignore.stdout = TRUE)}          
+  
     if (retRaster) retStack[[band]]<-assign(paste0(tools::file_path_sans_ext(basename(outName)),"band_",band),raster::stack(outName))
   }
   return(retStack)
@@ -350,7 +365,8 @@ otbGrayMorpho<- function(input=NULL,
                          structype.ball.yradius=5,
                          channel=NULL,
                          retRaster=FALSE,
-                         outDir=NULL){
+                         outDir=NULL,
+                         verbose=FALSE){
   
   directory<-getOutputDir(outDir)
   retStack<-list()
@@ -378,8 +394,12 @@ otbGrayMorpho<- function(input=NULL,
     }
     command<-paste(command, " -out ", outName)
     command<-paste(command, " -ram ",ram)
-    cat("\nexecute ", command[band],"\n")
-    system(command[band])
+    if (verbose) {
+      cat("\nrunning cmd:  ", command[band],"\n")
+      system(command[band])}
+    else{
+      system(command[band],intern = TRUE,ignore.stdout = TRUE)}         
+  
     if (retRaster) retStack[[band]]<-assign(paste0(tools::file_path_sans_ext(basename(outName)),"band_",band),raster::stack(outName))
   }
   return(retStack)
