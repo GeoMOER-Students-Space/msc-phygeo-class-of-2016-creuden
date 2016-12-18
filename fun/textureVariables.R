@@ -1,4 +1,5 @@
-#' Calculate selected Texture parameters from clouds based on spectral properties
+#' Calculate selected texture parameters based on gray level properties
+#' @note a raster* object is required
 #' 
 #' @param x A rasterLayer or a rasterStack containing different channels
 #' where clouds are already masked
@@ -119,9 +120,10 @@ textureVariables <- function(x,
 
 
 
-#' Calculate selected Texture parameters from clouds based on gray level properties
+#' Calculate selected texture parameters on gray level properties
 #' 
-#' @param input of GeoTiff containing 1 ore more gray value bands
+#' @note the otb is used for filtering. please provide a GeoTiff file
+#' @param input GeoTiff containing 1 or more gray value bands
 #' @param out string pattern vor individual naming of the output file(s)
 #' @param parameters.xyrad list with the x and y radius in pixel indicating the kernel sizes for which 
 #' the textures are calculated
@@ -219,7 +221,8 @@ otbHaraTex<- function(input=NULL,
 }
 
 #' Calculates local statistics for a given kernel size
-#' 
+#' @note the otb is used for the calculation of the statistics. Please provide a GeoTiff file
+#'  
 #' @param input of GeoTiff containing 1 ore more gray value bands
 #' @param out string pattern vor individual naming of the output file(s)
 #' @param radius computational window in pixel
@@ -274,6 +277,8 @@ otblocalStat<- function(input=NULL,
 
 
 #' Calculates edges for a given kernel size
+#' 
+#' @note the otb is used for filtering. please provide a GeoTiff file
 #' 
 #' @param input of GeoTiff containing 1 ore more gray value band(s)
 #' @param out the output mono band image containing the edge features
@@ -338,6 +343,8 @@ otbEdge<- function(input=NULL,
 
 
 #' Calculates Gray scale morphological operations for a given kernel size
+#' 
+#' @note the otb is used for filtering. please provide a GeoTiff file
 #' 
 #' @param input of GeoTiff containing 1 ore more gray value bands
 #' @param out the output mono band image containing the edge features
@@ -404,7 +411,7 @@ otbGrayMorpho<- function(input=NULL,
   }
   return(retStack)
 }
-
+# if necessary creates additional folders for the resulting files
 getOutputDir<- function (outDir){
   if (!is.null(outDir)) {
     otbOutputDir<-outDir
