@@ -124,7 +124,7 @@ setOTBEnv <- function(defaultOtb = "C:\\OSGeo4W64\\bin",installationRoot="C:\\OS
     # recursive dir for otb*.bat returns all version of otb bat files
       cat("\nsearching for OTB installations - this may take a while\n")
       cat("Alternatively you can provide a path like: C:\\OSGeo4W64\\bin\\\n")
-      cat("You can also provide a installation type like: 'osgeo4w64'\n")
+      cat("You can also provide a installation type like: 'osgeo4w64OTB'\n")
       rawOTB <- system(paste0("cmd.exe /c dir /B /S ",DL,"\\","otbcli.bat"),intern = TRUE)
     
     # trys to identify valid otb installations and their version numbers

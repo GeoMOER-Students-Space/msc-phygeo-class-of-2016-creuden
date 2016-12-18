@@ -388,10 +388,10 @@ otbGrayMorpho<- function(input=NULL,
 getOutputDir<- function (outDir){
   if (!is.null(outDir)) {
     otbOutputDir<-outDir
-    if (!file.exists(paste0(otbOutputDir, "/texture/"))) dir.create(file.path(paste0(otbOutputDir, "/texture/")), recursive = TRUE)
+    if (!file.exists(paste0(otbOutputDir, "/texture/"))) dir.create(file.path(paste0(otbOutputDir, "/texture/")), recursive = TRUE,showWarnings = FALSE)
   } else {
     otbOutputDir<-paste0(getwd(),"/texture/")
-    if (!file.exists(paste0(otbOutputDir, "/texture/"))) dir.create(file.path(paste0(otbOutputDir, "/texture/")), recursive = TRUE)
+    if (!file.exists(paste0(otbOutputDir, "/texture/"))) dir.create(file.path(paste0(otbOutputDir, "/texture/")), recursive = TRUE,showWarnings = FALSE)
   }
   return(otbOutputDir)
 }
