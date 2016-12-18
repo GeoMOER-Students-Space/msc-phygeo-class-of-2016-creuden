@@ -1,4 +1,5 @@
 # rs-ws-07
+#
 # MOC - Advanced GIS/Remote Sensing (T. Nauss, C. Reudenbach)
 #' 
 #'@name getOTB

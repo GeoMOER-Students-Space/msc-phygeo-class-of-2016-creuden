@@ -1,9 +1,10 @@
 # rs-ws-07
+#
 # MOC - Advanced GIS/Remote Sensing (T. Nauss, C. Reudenbach)
 #
 # Calculate selected texture parameters based on gray level properties
-# You may also use the function as a blueprint to integrate other otb system calls
-# the first otb function haralick has some comments about the used concept of doing so
+# You may also use the otb related part of the script as a blueprint to integrate more otb system calls
+# The first otb function otbHaraTex has some extended comments describing the concept
 # 
 # 
 #' @note a raster* object is required
