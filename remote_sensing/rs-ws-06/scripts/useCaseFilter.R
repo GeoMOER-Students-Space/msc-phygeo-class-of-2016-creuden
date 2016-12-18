@@ -40,7 +40,7 @@ initOTB(otbType="osgeo4w64OTB")
 
 ######## start tests ------------------------------------------------------------
 
-# x<- raster::stack(paste0(pd_rs_aerial,"test.tif"))
+# x<- raster::stack(paste0(pd_rs_aerial,inputFile))
 # # glcm package
 #   glcm<-textureVariables(x,
 #                          nrasters=1:nlayers(x),
@@ -50,13 +50,13 @@ initOTB(otbType="osgeo4w64OTB")
 #                          parallel=TRUE,
 #                          n_grey = 8 )
 # haralick  
-hara<- otbHaraTex(input=paste0(pd_rs_aerial,"test.tif"), texture="simple",retRaster = TRUE)
+hara<- otbHaraTex(input=paste0(pd_rs_aerial,inputFile), texture="simple",retRaster = TRUE)
 # standard stat
-stat<- otblocalStat(input=paste0(pd_rs_aerial,"test.tif"),radius=5,retRaster = TRUE)
+stat<- otblocalStat(input=paste0(pd_rs_aerial,inputFile),radius=5,retRaster = TRUE)
 # two times edge
-touzi<- otbEdge(input=paste0(pd_rs_aerial,"test.tif"),filter = "touzi", filter.touzi.yradius = 5, filter.touzi.xradius = 5,retRaster = TRUE)
-sobel<- otbEdge(input=paste0(pd_rs_aerial,"test.tif"),filter = "sobel",retRaster = TRUE)
+touzi<- otbEdge(input=paste0(pd_rs_aerial,inputFile),filter = "touzi", filter.touzi.yradius = 5, filter.touzi.xradius = 5,retRaster = TRUE)
+sobel<- otbEdge(input=paste0(pd_rs_aerial,inputFile),filter = "sobel",retRaster = TRUE)
 # two times morpho
-gmc<- otbGrayMorpho(input=paste0(pd_rs_aerial,"test.tif"),structype = "cross",retRaster = TRUE)
-gmb<- otbGrayMorpho(input=paste0(pd_rs_aerial,"test.tif"),structype.ball.xradius = 5,structype.ball.yradius = 10,retRaster = TRUE)
+gmc<- otbGrayMorpho(input=paste0(pd_rs_aerial,inputFile),structype = "cross",retRaster = TRUE)
+gmb<- otbGrayMorpho(input=paste0(pd_rs_aerial,inputFile),structype.ball.xradius = 5,structype.ball.yradius = 10,retRaster = TRUE)
 
