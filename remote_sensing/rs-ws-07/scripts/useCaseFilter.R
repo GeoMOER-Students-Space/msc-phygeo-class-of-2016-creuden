@@ -68,24 +68,21 @@ raster::plot(unlist(unlist(glcm$size_3$X4490600_5321400.3)))
 
 # haralick advanced filter  
 hara<- otbHaraTex(input=paste0(pd_rs_run,inputFile), texture="advanced",retRaster = TRUE)
-raster::plot(hara[[1]])
-raster::plot(hara[[2]])
-raster::plot(hara[[3]])
+res<- sapply(hara, FUN=raster::plot)
 
 # standard stat (mean, variance, skewness, kurtosis )
 stat<- otblocalStat(input=paste0(pd_rs_run,inputFile),radius=5,retRaster = TRUE)
-raster::plot(stat[[1]])
-raster::plot(stat[[2]])
-raster::plot(stat[[3]])
+res<- sapply(stat, FUN=raster::plot)
 
 # two arbitrary edge filter
 touzi<- otbEdge(input=paste0(pd_rs_run,inputFile),filter = "touzi", filter.touzi.yradius = 5, filter.touzi.xradius = 5,retRaster = TRUE)
-raster::plot(touzi[[1]])
 sobel<- otbEdge(input=paste0(pd_rs_run,inputFile),filter = "sobel",retRaster = TRUE)
-raster::plot(sobel[[1]])
+res<- sapply(touzi, FUN=raster::plot)
+res<- sapply(sobel, FUN=raster::plot)
+
 
 # two arbitrary morphological gray level filter
 gmc<- otbGrayMorpho(input=paste0(pd_rs_run,inputFile),structype = "cross",retRaster = TRUE)
-raster::plot(gmc[[1]])
 gmb<- otbGrayMorpho(input=paste0(pd_rs_run,inputFile),structype.ball.xradius = 5,structype.ball.yradius = 10,retRaster = TRUE)
-raster::plot(gmb[[1]])
+res<- sapply(gmc, FUN=raster::plot)
+res<- sapply(gmb, FUN=raster::plot)
