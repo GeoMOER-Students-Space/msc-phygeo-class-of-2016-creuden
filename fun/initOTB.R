@@ -21,7 +21,7 @@ initOTB <- function(defaultOTBPath=NULL,installationRoot= NULL, otbType=NULL,DL=
   
   # (R) set pathes  of OTB  binaries depending on OS WINDOWS
   if (is.null(defaultOTBPath)){
-    
+    if(Sys.info()["sysname"] == "Windows"){
     # if no path is provided  we have to search
     otbParams<-searchOSgeo4WOTB(DL=DL)
     
@@ -45,6 +45,7 @@ initOTB <- function(defaultOTBPath=NULL,installationRoot= NULL, otbType=NULL,DL=
     # if a setDefaultOTB was provided take this 
   } else {
     otbPath<-setOTBEnv(defaultOTBPath,installationRoot)  
+  }
   }
   return(otbPath)
 }
@@ -89,7 +90,7 @@ setOTBEnv <- function(defaultOtb = "C:\\OSGeo4W64\\bin",installationRoot="C:\\OS
     Sys.setenv(GEOTIFF_CSV=paste0(Sys.getenv("OSGEO4W_ROOT"),"\\share\\epsg_csv"),envir = .GlobalEnv)
     
   } else {
-    makGlobalVar("otbPath", "(usr/bin/")
+    makGlobalVar("otbPath", "/usr/bin/")
   }
   }
   return(defaultOtb)
@@ -119,7 +120,7 @@ setOTBEnv <- function(defaultOtb = "C:\\OSGeo4W64\\bin",installationRoot="C:\\OS
       Sys.setenv(GEOTIFF_CSV=paste0(Sys.getenv("OSGEO4W_ROOT"),"\\share\\epsg_csv"),envir = .GlobalEnv)
       
     } else {
-    
+      if(Sys.info()["sysname"] == "Windows"){
     # trys to find a osgeo4w installation on the whole C: disk returns root directory and version name
     # recursive dir for otb*.bat returns all version of otb bat files
       cat("\nsearching for OTB installations - this may take a while\n")
@@ -162,7 +163,8 @@ setOTBEnv <- function(defaultOtb = "C:\\OSGeo4W64\\bin",installationRoot="C:\\OS
     
     # bind the df lines
     otbInstallations <- do.call("rbind", otbInstallations)
-    }
+      }
+      }
     return(otbInstallations)
   }
   
