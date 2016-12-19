@@ -89,7 +89,7 @@ textureVariables <- function(x,
   }
   
   
-  glcm_kernelSize<-list()
+  glcm_filter<-list()
   for (j in 1:length(kernelSize)){
     if (class (x)=="RasterStack"||class (x)=="RasterBrick"){  
       if (parallel){
