@@ -93,7 +93,7 @@ textureVariables <- function(x,
   for (j in 1:length(kernelSize)){
     if (class (x)=="RasterStack"||class (x)=="RasterBrick"){  
       if (parallel){
-        glcm_kernelSize[[j]]<-foreach(i=nrasters,
+        glcm_filter[[j]]<-foreach(i=nrasters,
                                       .packages= c("glcm","raster"))%dopar%{
                                         glcm(x[[i]], 
                                              window = c(kernelSize[j], kernelSize[j]), 
