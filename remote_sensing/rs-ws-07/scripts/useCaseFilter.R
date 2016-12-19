@@ -71,7 +71,7 @@ raster::plotRGB(x)
 # glcm textures
 glcm<-textureVariables(x,
                        nrasters=1:nlayers(x),
-                       filter=c(3),
+                       kernelSize=c(3),
                        stats=c("mean", "variance", "homogeneity", "contrast", "dissimilarity", "entropy", 
                                "second_moment", "correlation"),
                        parallel=TRUE,
