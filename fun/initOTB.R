@@ -21,14 +21,18 @@
 #'
 
 
-initOTB <- function(defaultOTBPath=NULL,installationRoot= NULL, otbType=NULL,DL="C:"){
+initOTB <- function(defaultOTBPath=NULL,installationRoot= NULL, otbType=NULL,DL="C:") {
   
-  # (R) set pathes  of OTB  binaries depending on OS WINDOWS
-  if (is.null(defaultOTBPath)){
-    
+  if(Sys.info()["sysname"] == "Linux"){
     # if no path is provided  we have to search
-    otbParams<-searchOSgeo4WOTB(DL=DL)
     
+    otbParams<- system2("find", paste("/usr"," ! -readable -prune -o -type f -executable -iname 'otbcli' -print"),stdout = TRUE)
+    defaultOTBPath<-substr(otbParams,1,nchar(otbParams)-6) }
+    makGlobalVar("otbPath", defaultOTBPath)
+
+  # (R) set pathes  of OTB  binaries depending on OS WINDOWS
+ if (is.null(defaultOTBPath)) {
+
     # if just one valid installation was found take it
     if (nrow(otbParams) == 1) {  
       otbPath<-setOtbEnv(defaultOtb=otbParams$binDir[1],installationRoot=otbParams$baseDir[2])
@@ -47,9 +51,7 @@ initOTB <- function(defaultOTBPath=NULL,installationRoot= NULL, otbType=NULL,DL=
     }
     
     # if a setDefaultOTB was provided take this 
-  } else {
-    otbPath<-setOTBEnv(defaultOTBPath,installationRoot)  
-  }
+  } 
   return(otbPath)
 }
 
@@ -114,8 +116,9 @@ setOTBEnv <- function(defaultOtb = "C:\\OSGeo4W64\\bin",installationRoot="C:\\OS
   #' # get all valid OTB installation folders and params
   #' otbParam<- searchOSgeo4WOTB()
   
-  searchOSgeo4WOTB <- function(DL = "C:"){
+  searchOSgeo4WOTB <- function(DL = "C:") {
     
+
     
     if (substr(Sys.getenv("COMPUTERNAME"),1,5)=="PCRZP") {
       defaultOtb <- shQuote("C:\\Program Files\\QGIS 2.14\\bin")
@@ -169,4 +172,5 @@ setOTBEnv <- function(defaultOtb = "C:\\OSGeo4W64\\bin",installationRoot="C:\\OS
     }
     return(otbInstallations)
   }
+  
   

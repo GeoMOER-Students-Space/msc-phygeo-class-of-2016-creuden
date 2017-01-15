@@ -1,5 +1,6 @@
-# gi-ws-05-1
-#' @description  MOC - Advanced GIS (T. Nauss, C. Reudenbach)
+# rs-ws-04
+# MOC - Advanced GIS (T. Nauss, C. Reudenbach)
+#' 
 #' initGIS check and initializes gdal binaries
 #'@return 
 #' a list of the complete capabilities of the current installed gdal version
@@ -24,6 +25,7 @@ initgdalUtils <- function(){
     gdalUtils::gdal_setInstallation(search_path = shQuote("C:/Program Files/QGIS 2.14/bin/"))
   } else {
   ## (gdalUtils) check for a valid GDAL binary installation on your system
+    cat("\nsearching for GDAL binaries - this may take a while\n")
   gdalUtils::gdal_setInstallation()
   }
   valid.install<-!is.null(getOption("gdalUtils_gdalPath"))
