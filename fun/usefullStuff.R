@@ -7,3 +7,18 @@ gdalsplit<-function(fn){
   }
   return(noBands)
 }
+
+tifList2Brick<- function(x,path){
+  cat("importing ",x)
+  
+  if (class(x)[1] %in% c("RasterLayer", "RasterStack", "RasterBrick")){
+    imgStack<-NULL
+    files<-paste0(x,".tif")
+    # put all raster in a brick
+    imgStack<- brick(lapply(files, raster))
+    writeraster(imgStack,filename = "brick.tif",overwrite=TRUE)
+    # if GEOTIFF or other gdal type of data
+  } else{
+    imgStack<- raster::brick(x)
+  }
+}

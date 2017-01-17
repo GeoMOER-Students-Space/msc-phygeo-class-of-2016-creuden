@@ -1,11 +1,13 @@
-# rs-ws-04
-# MOC - Advanced GIS (T. Nauss, C. Reudenbach)
-#' 
+if (!isGeneric('initgdalUtils')) {
+  setGeneric('initgdalUtils', function(x, ...)
+    standardGeneric('initgdalUtils'))
+}
 #' initGIS check and initializes gdal binaries
 #'@return 
 #' a list of the complete capabilities of the current installed gdal version
-#' 
-#'@example 
+#'@export initgdalUtils 
+#'@examples
+#' \dontrun{
 #'
 #' # get all available driver 
 #' gdal<- initgdalUtils()
@@ -17,16 +19,15 @@
 #' 
 #' # get additional and available python tools
 #' gdal[[1]]$python_utilities
-#' 
-#' 
-#'
+#' }
+
 initgdalUtils <- function(){
   if (substr(Sys.getenv("COMPUTERNAME"),1,5)=="PCRZP") {
     gdalUtils::gdal_setInstallation(search_path = shQuote("C:/Program Files/QGIS 2.14/bin/"))
   } else {
-  ## (gdalUtils) check for a valid GDAL binary installation on your system
+    ## (gdalUtils) check for a valid GDAL binary installation on your system
     cat("\nsearching for GDAL binaries - this may take a while\n")
-  gdalUtils::gdal_setInstallation()
+    gdalUtils::gdal_setInstallation()
   }
   valid.install<-!is.null(getOption("gdalUtils_gdalPath"))
   if (!valid.install){
