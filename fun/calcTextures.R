@@ -3,30 +3,28 @@
 # MOC - Advanced GIS/Remote Sensing (T. Nauss, C. Reudenbach)
 #
 # Calculate selected texture parameters based on gray level properties
-# You may also use the otb related part of the script as a blueprint to integrate more otb system calls
-# The first otb function otbHaraTex has some extended comments describing the concept
+# You may also use the otb related part of the script as a blueprint 
+# to integrate more otb tools via R system calls
+# The first otb function otbHaraTex has some extended comments 
+# describing a straightforward wrapping concept
+# textureVariables provides a good practice example for using 
+# the R capabilities of paralell tasking 
 # 
 # 
-#' @note a raster* object is required
-#' 
-#' @param x A rasterLayer or a rasterStack containing different channels
-#' where clouds are already masked
-#' @param nrasters A vector of channels to use from x. Default =nlayers(x)
-#' @param filter A vector of numbers indicating the environment sizes for which 
-#' the textures are calculated
-#' @param stats A string vector of parameters to be calculated.
-#'  see \code{\link{glcm}}
-#' @param n_grey Number of grey values. see \code{\link{glcm}}
-#' @param parallel A logical value indicating whether parameters are calculated 
-#' parallely or not
-#' @param min_x for each channel the minimum value which can occur. If NULL then
-#' the minimum value from the rasterLayer is used.
-#' @param max_x for each channel the maximum value which can occur. If NULL then
-#' the maximum value from the rasterLayer is used.
-#' @return A list of RasterStacks containing the texture parameters for each 
-#' combination of channel and filter  
+#' @note for the use textureVariables a glcm wrapper function 
+#'       a raster* object is required
+#' @param x rasterLayer or a rasterStack containing different channels
+#' @param nrasters vector of channels to use from x. Default =nlayers(x)
+#' @param kernelSize vector of numbers indicating the environment sizes for which the textures are calculated
+#' @param stats string vector of parameters to be calculated.see \code{\link{glcm}}
+#' @param n_grey number of grey values. see \code{\link{glcm}}
+#' @param parallel logical value indicating whether parameters are calculated parallel or not
+#' @param min_x for each channel the minimum value which can occur. If NULL then the minimum value from the rasterLayer is used.
+#' @param max_x for each channel the maximum value which can occur. If NULL then the maximum value from the rasterLayer is used.
+#' @return list of RasterStacks containing the texture parameters for each combination of channel and kernelSize  
 #' @details This functions calls the glcm function from \link{glcm} with standard settings
 #' @author Hanna Meyer
+#' 
 #' @note More information at the texture tutorial site of
 #' \link{http://www.fp.ucalgary.ca/mhallbey/more_informaton.htm}(Mryka Hall-Beyer)
 #' Keep in mind that:\cr
@@ -44,27 +42,23 @@
 #' 
 #' ## example on how to calculate texture from a list of channels
 #' 
-#' #https://commons.wikimedia.org/wiki/User:Nepenthes
-#' url<-"http://media.kaveldun.com/2016/01/desert.jpg"
-#' res <- curl::curl_download(url, "image.jpg")
-#' img<-readJPEG("image.jpg")
-#' red<-raster::raster(img[,ncol(img):1,1])
-#' green<-raster::raster(img[,ncol(img):1,2])
-#' blue<-raster::raster(img[,ncol(img):1,3])
-#' r<-raster::stack(x = c(red,green,blue))
+#' url<-"http://www.ldbv.bayern.de/file/zip/5619/DOP%2040_CIR.zip"
+#' res <- curl::curl_download(url, "testdata.zip")
+#' unzip(res,junkpaths = TRUE,overwrite = TRUE)
+#' r<- raster::stack(paste0(getwd(),"4490600_5321400.tif"))
 #' 
-#' #calculate texture
+#' # call glcm wrapper
 #' result <- textureVariables(r,nrasters=1:3,
 #' stats=c("mean", "variance", "homogeneity"))
 #' 
 #' #plot the results from VIS0.6 channel:
-#' plot(result$size_3$VIS0.6)
+#' raster::plot(unlist(unlist(glcm$size_3$X4490600_5321400.1)))
 #' 
 #' @seealso \code{\link{glcm}}
 
 textureVariables <- function(x,
                              nrasters=1:nlayers(x),
-                             filter=c(3),
+                             kernelSize=c(3),
                              stats=c("mean", "variance", "homogeneity", "contrast", "dissimilarity", "entropy", 
                                      "second_moment", "correlation"),
                              shift=list(c(0,1), c(1,1), c(1,0),c(1,-1)),
@@ -96,23 +90,23 @@ textureVariables <- function(x,
   
   
   glcm_filter<-list()
-  for (j in 1:length(filter)){
+  for (j in 1:length(kernelSize)){
     if (class (x)=="RasterStack"||class (x)=="RasterBrick"){  
       if (parallel){
         glcm_filter[[j]]<-foreach(i=nrasters,
-                                  .packages= c("glcm","raster"))%dopar%{
-                                    glcm(x[[i]], 
-                                         window = c(filter[j], filter[j]), 
-                                         shift=shift,
-                                         statistics=stats,n_grey=n_grey,
-                                         min_x=min_x[i],max_x=max_x[i],
-                                         na_opt="center")
-                                  } 
+                                      .packages= c("glcm","raster"))%dopar%{
+                                        glcm(x[[i]], 
+                                             window = c(kernelSize[j], kernelSize[j]), 
+                                             shift=shift,
+                                             statistics=stats,n_grey=n_grey,
+                                             min_x=min_x[i],max_x=max_x[i],
+                                             na_opt="center")
+                                      } 
       } else {
         glcm_filter[[j]]<-foreach(i=nrasters,
                                   .packages= c("glcm","raster"))%do%{
                                     mask(glcm(x[[i]], 
-                                              window = c(filter[j], filter[j]), 
+                                              window = c(kernelSize[j], kernelSize[j]), 
                                               shift=shift,
                                               statistics=stats,n_grey=n_grey,
                                               min_x=min_x[i],max_x=max_x[i],
@@ -121,14 +115,14 @@ textureVariables <- function(x,
       }
       names(glcm_filter[[j]])<-names(x)[nrasters]
     } else {
-      glcm_filter[[j]]<-mask(glcm(x, window = c(filter[j], filter[j]), 
+      glcm_filter[[j]]<-mask(glcm(x, window = c(kernelSize[j], kernelSize[j]), 
                                   shift=shift,
                                   statistics=stats,n_grey=n_grey,
                                   min_x=min_x,max_x=max_x,
                                   na_opt="center"), x)
     }   
   }
-  names(glcm_filter)<-paste0("size_",filter)
+  names(glcm_filter)<-paste0("size_",kernelSize)
   return(glcm_filter)
 }
 
@@ -139,8 +133,7 @@ textureVariables <- function(x,
 #' @note the otb is used for filtering. please provide a GeoTiff file
 #' @param input GeoTiff containing 1 or more gray value bands
 #' @param out string pattern vor individual naming of the output file(s)
-#' @param parameters.xyrad list with the x and y radius in pixel indicating the kernel sizes for which 
-#' the textures are calculated
+#' @param parameters.xyrad list with the x and y radius in pixel indicating the kernel sizes for which the textures are calculated
 #' @param parameters.xyoff  vector containg the directional offsets. Valid combinations are: list(c(1,1),c(1,0),c(0,1),c(1,-1))
 #' @param n_grey Number of grey values. 
 #' @param parallel A logical value indicating whether parameters are calculated parallely or not
@@ -173,8 +166,6 @@ textureVariables <- function(x,
 #' res <- curl::curl_download(url, "testdata.zip")
 #' unzip(res,junkpaths = TRUE,overwrite = TRUE)
 #' otbHaraTex(input=paste0(getwd(),"4490600_5321400.tif"),texture="simple")
-
-
 
 otbHaraTex<- function(input=NULL,
                       out="hara",
@@ -246,8 +237,8 @@ otbHaraTex<- function(input=NULL,
 }
 
 #' Calculates local statistics for a given kernel size
-#' @note the otb is used for the calculation of the statistics. Please provide a GeoTiff file
-#'  
+#' 
+#' @note the otb is used for the calculation of the statistics. Please provide a GeoTiff file  
 #' @param input of GeoTiff containing 1 ore more gray value bands
 #' @param out string pattern vor individual naming of the output file(s)
 #' @param radius computational window in pixel
@@ -297,7 +288,7 @@ otblocalStat<- function(input=NULL,
       system(command[band])}
     else{
       system(command[band],intern = TRUE,ignore.stdout = TRUE)}  
-
+    
     if (retRaster) retStack[[band]]<-assign(paste0(tools::file_path_sans_ext(basename(outName)),"band_",band),raster::stack(outName))
   }
   return(retStack)
@@ -307,7 +298,6 @@ otblocalStat<- function(input=NULL,
 #' Calculates edges for a given kernel size
 #' 
 #' @note the otb is used for filtering. please provide a GeoTiff file
-#' 
 #' @param input of GeoTiff containing 1 ore more gray value band(s)
 #' @param out the output mono band image containing the edge features
 #' @param filter the choice of edge detection method (gradient/sobel/touzi)
@@ -318,7 +308,6 @@ otblocalStat<- function(input=NULL,
 #' @param retRaster boolean if TRUE a raster stack is returned
 #' @param verbose switch for system messages default is FALSE
 #' @return list of geotiffs containing thelocal statistics for each channel 
-
 #' @author Chris Reudenbach
 #' @export otbedge
 #' @examples 
@@ -367,17 +356,15 @@ otbEdge<- function(input=NULL,
       system(command[band])}
     else{
       system(command[band],intern = TRUE,ignore.stdout = TRUE)}          
-  
+    
     if (retRaster) retStack[[band]]<-assign(paste0(tools::file_path_sans_ext(basename(outName)),"band_",band),raster::stack(outName))
   }
   return(retStack)
 }
 
-
 #' Calculates Gray scale morphological operations for a given kernel size
 #' 
 #' @note the otb is used for filtering. please provide a GeoTiff file
-#' 
 #' @param input of GeoTiff containing 1 ore more gray value bands
 #' @param out the output mono band image containing the edge features
 #' @param filter the choice of the morphological operation (dilate/erode/opening/closing) (default value is dilate)
@@ -389,7 +376,6 @@ otbEdge<- function(input=NULL,
 #' @param retRaster boolean if TRUE a raster stack is returned
 #' @param verbose switch for system messages default is FALSE
 #' @return list of geotiffs containing thelocal statistics for each channel 
-
 #' @author Chris Reudenbach
 #' @export otbgraymorpho
 #' @examples 
@@ -442,7 +428,7 @@ otbGrayMorpho<- function(input=NULL,
       system(command[band])}
     else{
       system(command[band],intern = TRUE,ignore.stdout = TRUE)}         
-  
+    
     if (retRaster) retStack[[band]]<-assign(paste0(tools::file_path_sans_ext(basename(outName)),"band_",band),raster::stack(outName))
   }
   return(retStack)

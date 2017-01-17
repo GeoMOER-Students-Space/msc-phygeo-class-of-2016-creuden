@@ -37,7 +37,7 @@ setwd(pd_rs_run)
 gdal<- initgdalUtils()
 
 # initialize SAGA GIS bindings for SAGA 3.x
-initSAGA(c("C:\\apps\\saga_3.0.0_x64","C:\apps\\saga_3.0.0_x64\\modules"))
+initSAGA()
 
 # initialize OTB bindings for OSGeo4W64 default 
 initOTB(otbType="osgeo4w64OTB")
