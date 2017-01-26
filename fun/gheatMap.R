@@ -1,4 +1,4 @@
-# ------------- GRASS utility function for raster to point conversion
+# ------------- GRASS utility function for kernel density calculations
 # (GRASS)   raster to vector points 
 gheatMapGRASS <- function(fNinput,retSP=FALSE,radius=50){
   # (GRASS) import
@@ -16,21 +16,23 @@ gheatMapGRASS <- function(fNinput,retSP=FALSE,radius=50){
                      type="point",
                      column="Z")
   
-  # kernel density
+  # (GRASS) kernel density
   rgrass7::execGRASS('v.kernel',  
                      flags=c("quiet"),
                      input="rt_treeNodes",
                      output="rt_heatmap_trees",
                      radius=radius)
   
-  
+  # (GRASS) export to GeoTiff
   rgrass7::execGRASS('r.out.gdal',  
                      flags = c("overwrite","quiet","c"),
                      input = "rt_heatmap_trees",
                      output = paste0(pd_gi_run,"rt_heatmap_trees_",as.character(radius),".tif"),
                      type="Float64")
- 
-  heatTrees <- rgdal::readOGR(pd_gi_run,"rt_heatmap_trees")
-  if (retSP) return( heatTrees) 
+  
+  # (R) return as 
+  if (retSP) {
+    heatTrees <- raster::raster(paste0(pd_gi_run,"rt_heatmap_trees_",as.character(radius),".tif"))
+    return( heatTrees) }
 }
 
