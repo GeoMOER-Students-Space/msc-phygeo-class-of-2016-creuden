@@ -24,7 +24,7 @@ res<- sapply(sourceFileNames, FUN=source)
 createMocFolders(filepath_base)
 
 # get the global path variables for the current session
-getSessionPathes(filepath_git = filepath_base, sessNo = activeSession,courseCode = "rs")
+getSessionPathes(filepath_git = filepath_base, sessNo = activeSession,courseCode = "gi")
 
 # set working directory
 setwd(pd_gi_run)
@@ -34,7 +34,7 @@ setwd(pd_gi_run)
 # check GDAL binaries and start gdalUtils
 gdal<- initgdalUtils()
 
-initSAGA(c("/usr/local/bin","/usr/local/lib"))
+initSAGA()
 
 ######### START of the thematic stuff ----------------------------------------
 
@@ -66,13 +66,13 @@ dem<-raster::raster(paste0(pd_gi_input,inputFile))
 gauge <- data.frame(y = lat, x = lon)
 
 # (R) turn into a spatial object
-coordinates(gauge) <- ~ x + y
+sp::coordinates(gauge) <- ~ x + y
 
 # (R) assign the coordinate system (WGS84)
-projection(gauge) <- CRS("+init=epsg:4326")
+raster::projection(gauge) <- sp::CRS("+init=epsg:4326")
 
 # (R) reproject it
-estGauge <- spTransform(gauge, CRS("+init=epsg:25832"))
+estGauge <- sp::spTransform(gauge, sp::CRS("+init=epsg:25832"))
 
 
 
@@ -109,7 +109,7 @@ gaugeBuffer <- as.data.frame(raster::extract(catchmentarea, estGauge, buffer = 2
 id <- gaugeBuffer$cell[which.max(gaugeBuffer$value)]
 
 # (R) get the posistion that is estimated to be the gauge
-gaugeLoc <- xyFromCell(dem, id)
+gaugeLoc <- raster::xyFromCell(dem, id)
 
 
 # (SAGA) calculate upslope area

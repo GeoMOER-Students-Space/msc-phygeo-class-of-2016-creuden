@@ -139,7 +139,7 @@ crownarea <- rgdal::readOGR(pd_gi_run,"rt_crown")
 
 # view it 
   
-mapview::mapview(tws,zcol="noNode",cex=2,alpha.regions = 0.3,lwd=1) +
+mapview::mapview(itc3,cex=2,alpha.regions = 0.3,lwd=1) +
 mapview::mapview(minZ,zcol="Z",cex=1,alpha.regions = 0.1,lwd=1)
 
 

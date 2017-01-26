@@ -65,7 +65,7 @@ getSessionPathes<- function(filepath_git,sessNo=1,courseCode="gi") {
   # script and function folder for each course session can be adapted 
   session_working_folder<-c("/scripts/", "/rmds/")
   # currently implemented data folders can be adapted 
-  data_working_folder<-list(list("aerial/","aerial_merged/","aerial_croped/","RData/","temp/","run/","input/","filter/","aerial_rgbi/","aerial_classified/","otb_results"),
+  data_working_folder<-list(list("aerial/","aerial_merged/","aerial_croped/","RData/","temp/","run/","input/","filter/","aerial_rgbi/","aerial_classified/","otb_results","aerial_texture"),
                             list("RData/","temp/","run/","input/","output/"),
                             list("csv/","raw/"))  
   

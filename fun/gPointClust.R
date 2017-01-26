@@ -18,23 +18,25 @@ ras2vecpoiGRASS <- function(fNinput,retSP=FALSE){
   # cluster identify clusters
   
   rgrass7::execGRASS('v.cluster',  
-                     flags=c("overwrite","quiet"),
+                     flags=c("2","b","overwrite","quiet"),
                      input="rt_treeNodes",
                      output="rt_cluster_trees",
+                     min=50,
+                     layer="3",
                      method="density")
   
+  rgrass7::execGRASS('v.colors',  
+                     map="rt_treeNodes",
+                     layer="2",
+                     use="cat",
+                     color="random")
   rgrass7::execGRASS('v.out.ogr',  
                      flags = c("overwrite","quiet"),
                      input = "rt_cluster_trees",
                      output = paste0(pd_gi_run,"rt_cluster_trees.shp"),
                      format = "ESRI_Shapefile")
-  # (GRASS) export
-  rgrass7::execGRASS('v.out.ogr',  
-                     flags = c("overwrite","quiet"),
-                     input = "rt_treeNodes",
-                     output = paste0(tools::file_path_sans_ext(fNinput),".shp"),
-                     format = "ESRI_Shapefile")
-  treesR <- rgdal::readOGR(pd_gi_run,basename(tools::file_path_sans_ext(fNinput)))
-  if (retSP) return( treesR) 
+ 
+  clustTrees <- rgdal::readOGR(pd_gi_run,"rt_cluster_trees")
+  if (retSP) return( clustTrees) 
 }
 

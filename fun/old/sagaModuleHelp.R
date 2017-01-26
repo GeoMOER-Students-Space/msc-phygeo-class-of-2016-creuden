@@ -1,3 +1,6 @@
+# gi-ws-04
+# MOC - Advanced GIS (T. Nauss, C. Reudenbach)
+#' 
 #' sagaModuleHelp
 #'@description gi-ws-04-1 MOC - Advanced GIS (T. Nauss, C. Reudenbach)
 #' get the  command line help for the requested module/algorithm combination using the defined saga_cmd  

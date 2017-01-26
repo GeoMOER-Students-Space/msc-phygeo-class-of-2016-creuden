@@ -1,30 +1,31 @@
-#'search for valid SAGA installations on a given Windows drive 
-#'
-#'@name searchSAGA4W
-#'
-#'@description  provides a fairly good estimation of valid SAGA installation(s) on your Windows system
+
+#'@title Search recursively for valid 'Windows' 'SAGA GIS' installation(s)
+#'@name searchSAGAW
+#'@description  Search for valid 'SAGA GIS' installation(s) on a given 'Windows' drive 
 #'@param DL drive letter default is "C:"
-#'@return a dataframe with the SAGA root folder, the version name and the installation type
+#'@param verSelect boolean default is FALSE. If there is more than one 'SAGA GIS' installation and \code{verSelect} = TRUE the user can select interactively the preferred 'SAGA GIS' version 
+#'@return A dataframe contasining the 'SAGA GIS' root folder(s), the version name(s) and the installation type(s)
 #'@author Chris Reudenbach
-#'@export searchSAGA4W
+#'@export searchSAGAW
 #'
 #'@examples
 #' \dontrun{
-#'#### Examples how to use searchSAGA4W 
+#'#### Examples how to use searchSAGAW 
 #'
 #' # get all valid SAGA installation folders and params
-#' sagaParams<- searchSAGA4W()
+#' sagaParams<- searchSAGAW()
 #' }
 
-searchSAGA4W <- function(DL = "C:",sagaPath=NULL){
-  # check if running on a HRZMR Pool PC
-  sagaPath<- checkPC("saga")  
+searchSAGAW <- function(DL = "C:",
+                        verSelect=FALSE){
+  
+  sagaPath <- checkPCDomain("saga")  
   if (is.null(sagaPath)) {
+    
     # trys to find a osgeo4w installation on the whole C: disk returns root directory and version name
     # recursive dir for saga_cmd.exe returns all version of otb bat files
-    cat("\nsearching for SAGA installations - this may take a while\n")
-    cat("Alternatively you can provide a path like: C:\\OSGeo4W64\\bin\\\n")
-    cat("You can also provide a installation type like: 'osgeo4w64'\n")
+    cat("\nsearching for SAGA GIS installations - this may take a while\n")
+    cat("For providing the path manually see ?searchSAGAW \n")
     
     # for a straightforward use of a correct codetable using the cmd command "dir" is used
     rawSAGA <- system(paste0("cmd.exe /c dir /B /S ",DL,"\\","saga_cmd.exe"),intern = TRUE)
@@ -32,37 +33,41 @@ searchSAGA4W <- function(DL = "C:",sagaPath=NULL){
     # trys to identify valid SAGA GIS installation(s) & version number(s)
     sagaPath <- lapply(seq(length(rawSAGA)), function(i){
       cmdfileLines <- rawSAGA[i]
-      installerType<-""
+      installerType <- ""
       # if the the tag "OSGEO4W" exists set installationType
-      if (length(unique(grep(paste("OSGeo4W64", collapse = "|"), rawSAGA[i], value = TRUE))) > 0){
-        rootDir<-unique(grep(paste("OSGeo4W64", collapse = "|"), rawSAGA[i], value = TRUE))
-        rootDir<- substr(rootDir,1, gregexpr(pattern = "saga_cmd.exe", rootDir)[[1]][1] - 1)
-        installDir<-substr(rootDir,1, gregexpr(pattern = "bin", rootDir)[[1]][1] - 2)
-        installerType<- "osgeo4w64SAGA"
+      if (length(unique(grep(paste("OSGeo4W64", collapse = "|"), rawSAGA[i], value = TRUE))) > 0) {
+        rootDir <- unique(grep(paste("OSGeo4W64", collapse = "|"), rawSAGA[i], value = TRUE))
+        rootDir <- substr(rootDir,1, gregexpr(pattern = "saga_cmd.exe", rootDir)[[1]][1] - 1)
+        #installDir <- substr(rootDir,1, gregexpr(pattern = "bin", rootDir)[[1]][1] - 2)
+        installDir <- rootDir
+        installerType <- "osgeo4w64SAGA"
       }    
       
       # if the the tag "OSGEO4W" exists set installationType
-      else if (length(unique(grep(paste("OSGeo4W", collapse = "|"), rawSAGA[i], value = TRUE))) > 0){
-        rootDir<-unique(grep(paste("OSGeo4W", collapse = "|"), rawSAGA[i], value = TRUE))
-        rootDir<- substr(rootDir,1, gregexpr(pattern = "saga_cmd.exe", rootDir)[[1]][1] - 1)
-        installDir<-substr(rootDir,1, gregexpr(pattern = "bin", rootDir)[[1]][1] - 2)
-        installerType<- "osgeo4wSAGA"
+      else if (length(unique(grep(paste("OSGeo4W", collapse = "|"), rawSAGA[i], value = TRUE))) > 0) {
+        rootDir <- unique(grep(paste("OSGeo4W", collapse = "|"), rawSAGA[i], value = TRUE))
+        rootDir <- substr(rootDir,1, gregexpr(pattern = "saga_cmd.exe", rootDir)[[1]][1] - 1)
+        #installDir <- substr(rootDir,1, gregexpr(pattern = "bin", rootDir)[[1]][1] - 2)
+        installDir <- rootDir
+        installerType <- "osgeo4wSAGA"
       }
       # if the the tag "QGIS" exists set installationType
-      else if (length(unique(grep(paste("QGIS", collapse = "|"), rawSAGA[i], value = TRUE))) > 0){
-        rootDir<-unique(grep(paste("QGIS", collapse = "|"), rawSAGA[i], value = TRUE))
-        rootDir<- substr(rootDir,1, gregexpr(pattern = "saga_cmd.exe", rootDir)[[1]][1] - 1)
-        installDir<-substr(rootDir,1, gregexpr(pattern = "bin", rootDir)[[1]][1] - 2)
-        installerType<- "qgisSAGA"
+      else if (length(unique(grep(paste("QGIS", collapse = "|"), rawSAGA[i], value = TRUE))) > 0) {
+        rootDir <- unique(grep(paste("QGIS", collapse = "|"), rawSAGA[i], value = TRUE))
+        rootDir <- substr(rootDir,1, gregexpr(pattern = "saga_cmd.exe", rootDir)[[1]][1] - 1)
+        #installDir <- substr(rootDir,1, gregexpr(pattern = "bin", rootDir)[[1]][1] - 2)
+        installDir <- rootDir
+        installerType <- "qgisSAGA"
       }
       else{
-        rootDir<- substr(rawSAGA[i],1, gregexpr(pattern = "saga_cmd.exe", rawSAGA[i])[[1]][1] - 1)
-        installDir<-substr(rootDir,1, gregexpr(pattern = "bin", rootDir)[[1]][1] - 2)
-        installerType<- "userSAGA"
+        rootDir <- substr(rawSAGA[i],1, gregexpr(pattern = "saga_cmd.exe", rawSAGA[i])[[1]][1] - 1)
+        #installDir <- substr(rootDir,1, gregexpr(pattern = "bin", rootDir)[[1]][1] - 2)
+        installDir <- rootDir
+        installerType <- "userSAGA"
       }
       
       # put the result in a data frame
-      data.frame(binDir = rootDir, baseDir=installDir, installationType = installerType,stringsAsFactors = FALSE)
+      data.frame(binDir = rootDir, baseDir = installDir, installationType = installerType,stringsAsFactors = FALSE)
       
     }) # end lapply
     
@@ -74,76 +79,96 @@ searchSAGA4W <- function(DL = "C:",sagaPath=NULL){
   return(sagaPath)
 }
 
-#'Initialize \link{rgrass7} for Windows OS
+#'@title Initialize and set up 'GRASS GIS' and \code{rgrass7} for the usage on 'Windows' OS
 #'@name getGrassParams4W
-#'@description Initialize the enviroment variables on a Windows OS for using  GRASS via \link{rgrass7}
-#'@details The concept is very straightforward but for an all days usage pretty helpful. You need to provide a GDAL conform raster file, a \link{raster} object or you may download SRTM data with \link{getGeoData}. This settings will be used to initialize a temporary but static \href{https://cran.r-project.org/web/packages/rgrass7}{rgrass7} environment. Additionally \href{https://cran.r-project.org/web/packages/RSAGA}{RSAGA} and \href{https://cran.r-project.org/web/packages/gdalUtils}{gdalUtils} are initialized and checked. During the rsession you will have full access to GRASS7 via the wrapper packages. .
-#'@usage getGrassParams4W()
-#'@param x raster or sp object 
-#'@param setDefaultGrass default = NULL wil force a search for GRASS You may provide a valid combination as c("C:\\OSGeo4W64","grass-7.0.5","osgeo4w")
+#'@description Initialize the enviroment variables on a 'Windows' OS for using 
+#'  'GRASS GIS' via \link{rgrass7}
+#'@details The concept is very straightforward but for an all days usage pretty
+#'  helpful. You need to provide a \link{raster} or a \link{sp} object. The derived properties are used to initialize a temporary but static
+#'  \href{https://CRAN.R-project.org/package=rgrass7}{rgrass7} environment. During the rsession you will have full access to
+#'  GRASS7 both via the wrapper package as well as the command line.
+#'@param DL raster or sp object
+#'@param setDefaultGrass default = NULL forces a full search for 'GRASS GIS' binaries. You may
+#'  alternatively provide a vector containing pathes and keywords. c("C:/OSGeo4W64","grass-7.0.5","osgeo4W") is valid for a typical osgeo4w installation.
+#'@param verSelect if TRUE you must interactivley selcect between alternative installations
 #'@return getGrassParams4W initializes the usage of GRASS7.
 #'@export getGrassParams4W
-#'
+#'  
 #'@examples
 #' \dontrun{
-#' # automatic retrieval of valid GRASS environment settings 
+#' # automatic retrieval of valid 'GRASS GIS' environment settings 
 #' # if more than one is found the user has to choose.
 #' getGrassParams4W()
 #' 
 #' # typical standalone installation
-#' getGrassParams4W(c("C:\\Program Files\\GRASS GIS 7.0.5","GRASS GIS 7.0.5","NSIS"))
+#' getGrassParams4W(c("C:/Program Files/GRASS GIS 7.0.5","GRASS GIS 7.0.5","NSIS"))
 #' 
 #' # typical OSGeo4W64 installation
-#' getGrassParams4W(c("C:\\OSGeo4W64","grass-7.0.5","osgeo4W"))
+#' getGrassParams4W(c("C:/OSGeo4W64","grass-7.0.5","osgeo4W"))
 #' }
 
-getGrassParams4W <- function(setDefaultGrass=NULL,DL="C:"){
+getGrassParams4W <- function(setDefaultGrass=NULL, DL="C:", verSelect = FALSE){
   
-  # (R) set pathes  of GRASS  binaries depending on OS WINDOWS
-  if (is.null(setDefaultGrass)){
+  # (R) set pathes  of 'GRASS' binaries depending on 'WINDOWS'
+  if (is.null(setDefaultGrass)) {
     
     # if no path is provided  we have to search
-    grassParams<-searchOSgeo4WGrass(DL=DL)
+    grassParams <- searchGRASSW(DL = DL)
     
     # if just one valid installation was found take it
     if (nrow(grassParams) == 1) {  
-      grass.gis.base<-setGrassEnv4W(grassRoot=setDefaultGrass[1],grassVersion=setDefaultGrass[2],installationType = setDefaultGrass[3])
+      grass.gis.base <- setGrassEnv4W(grassRoot = grassParams$instDir[[1]],
+                                      grassVersion = grassParams$version[[1]], 
+                                      installationType = grassParams$installationType[[1]] )
       
       # if more than one valid installation was found you have to choose 
-    } else if (nrow(grassParams) > 1) {
-      cat("You have more than one valid GRASS version\n")
+    } else if (nrow(grassParams) > 1 & verSelect) {
+      cat("You have more than one valid GRASS GIS version\n")
       print(grassParams)
       cat("\n")
-      ver<- as.numeric(readline(prompt = "Please choose one:  "))
-      grass.gis.base<-setGrassEnv4W(grassRoot=grassParams$instDir[[ver]],
-                                    grassVersion=grassParams$version[[ver]], 
+      ver <- as.numeric(readline(prompt = "Please choose one:  "))
+      grass.gis.base <- setGrassEnv4W(grassRoot = grassParams$instDir[[ver]],
+                                    grassVersion = grassParams$version[[ver]], 
                                     installationType = grassParams$installationType[[ver]] )
+    } else if (nrow(grassParams) > 1 & !verSelect) {  
+      grass.gis.base <- setGrassEnv4W(grassRoot = grassParams$instDir[[1]],
+                                      grassVersion = grassParams$version[[1]], 
+                                      installationType = grassParams$installationType[[1]] )
+      
+      # if more than one valid installation was found you have to choose 
     }
     
     # if a setDefaultGrass was provided take this 
   } else {
-    grass.gis.base<-setGrassEnv4W(grassRoot=setDefaultGrass[1],grassVersion=setDefaultGrass[2],installationType = setDefaultGrass[3])  
+    grass.gis.base <- setGrassEnv4W(grassRoot = setDefaultGrass[1],
+                                    grassVersion = setDefaultGrass[2], 
+                                    installationType = setDefaultGrass[3])  
   }
   return(grass.gis.base)
 }
 
-#'searchOSgeo4WGrass
-#'@title search for valid OSGeo4W GRASS installation(s) on a given Windows drive 
-#'@description  provides an  estimation of valid GRASS installation(s) on your Windows system. There is a major difference between osgeo4W and standalone installations. The functions trys to find all valid installations by analysing the calling batch scripts.
+
+
+#'@title Search recursivly valid 'GRASS GIS' installation(s) on a given 'Windows' drive 
+#'@name searchGRASSW
+#'@title Search for valid OSGeo4W 'GRASS GIS' installation(s) on a given 'Windows' drive 
+#'@description  Provides an  list of valid 'GRASS GIS' installation(s) on your 'Windows' system. There is a major difference between osgeo4W and standalone installations. The functions trys to find all valid installations by analysing the calling batch scripts.
 #'@param DL drive letter to be searched, default is "C:"
-#'@return dataframe with the GRASS root dir, version name and installation type code word
+#'@return A dataframe with the 'GRASS GIS' root folder(s), version name(s) and installation type code(s)
 #'@author Chris Reudenbach
-#'@export searchOSgeo4WGrass
+#'@export searchGRASSW
 #'
 #'@examples
 #' \dontrun{
-#' # get all valid GRASS installation folders and params on WindowsOS
-#' grassParam<- searchOSgeo4WGrass()
+#' # get all valid 'GRASS GIS' installation folders and params at "C:"
+#' searchGRASSW()
 #' }
 
-searchOSgeo4WGrass <- function(DL = "C:"){
+searchGRASSW <- function(DL = "C:"){
   # trys to find a osgeo4w installation on the whole C: disk returns root directory and version name
   # recursive dir for grass*.bat returns all version of grass bat files
+  cat("\nsearching for GRASS installations - this may take a while\n")
+  cat("For providing the path manually see ?searchGRASSW \n")
   rawGRASS <- system(paste0("cmd.exe /c dir /B /S ", DL, "\\grass*.bat"), intern = T)
   
   # trys to identify valid grass installation(s) & version number(s)
@@ -151,51 +176,51 @@ searchOSgeo4WGrass <- function(DL = "C:"){
     # convert codetable according to cmd.exe using type
     batchfileLines <- system(paste0("cmd.exe /c TYPE \"", rawGRASS[i], "\""), 
                              ignore.stdout = TRUE, intern = T)
-    osgeo4w<-FALSE
-    standAlone<-FALSE
-    rootDir<-''
+    osgeo4w <- FALSE
+    standAlone <- FALSE
+    rootDir <- ''
     
     # if the the tag "OSGEO4W" exists set installationType
-    if (length(unique(grep(paste("OSGEO4W", collapse = "|"), batchfileLines, value = TRUE))) > 0){
+    if (length(unique(grep(paste("OSGEO4W", collapse = "|"), batchfileLines, value = TRUE))) > 0) {
       osgeo4w <- TRUE
       standAlone <- FALSE
     }
     # if the the tag "NSIS installer" exists set installationType
-    if (length(unique(grep(paste("NSIS installer", collapse = "|"), batchfileLines, value = TRUE))) > 0){
+    if (length(unique(grep(paste("NSIS installer", collapse = "|"), batchfileLines, value = TRUE))) > 0) {
       osgeo4w <- FALSE
       standAlone <- TRUE
     }
     
     ### if installationType is osgeo4w
-    if (osgeo4w){
+    if (osgeo4w) {
       # grep line with root directory and extract the substring defining GISBASE
       rootDir <- unique(grep(paste("SET OSGEO4W_ROOT=", collapse = "|"), batchfileLines, value = TRUE))
       if (length(rootDir) > 0) rootDir <- substr(rootDir, gregexpr(pattern = "=", rootDir)[[1]][1] + 1, nchar(rootDir))
       
       # grep line with the version name and extract it
       verChar <- unique(grep(paste("\\benv.bat\\b", collapse = "|"), batchfileLines,value = TRUE))
-      if (length(rootDir) > 0){
+      if (length(rootDir) > 0) {
         verChar <- substr(verChar, gregexpr(pattern = "\\grass-", verChar)[[1]][1], nchar(verChar))
-        verChar <- substr(verChar, 1, gregexpr(pattern = "\\\\", verChar)[[1]][1]-1)
+        verChar <- substr(verChar, 1, gregexpr(pattern = "\\\\", verChar)[[1]][1] - 1)
       }
       installerType <- "osgeo4W"
     }
     
     ### if installatationtype is standalone
-    if (standAlone){
+    if (standAlone) {
       # grep line containing GISBASE and extract the substring 
       rootDir <- unique(grep(paste("set GISBASE=", collapse = "|"), batchfileLines, value = TRUE))
       if (length(rootDir) > 0) rootDir <- substr(rootDir, gregexpr(pattern = "=", rootDir)[[1]][1] + 1, nchar(rootDir))
       verChar <- rootDir
-      if (length(rootDir) > 0){
+      if (length(rootDir) > 0) {
         verChar <- substr(verChar, gregexpr(pattern = "GRASS", verChar)[[1]][1], nchar(verChar))
       }
       installerType <- "NSIS"
     }
     
     # check if the the folder really exists
-    if (length(rootDir) > 0){
-      if (!file.exists(file.path(rootDir))){
+    if (length(rootDir) > 0) {
+      if (!file.exists(file.path(rootDir))) {
         exist <- FALSE
       } else {
         exist <- TRUE
@@ -205,7 +230,7 @@ searchOSgeo4WGrass <- function(DL = "C:"){
     }
     
     # put the existing GISBASE directory, version number  and installation type in a data frame
-    if (length(rootDir) > 0 & exist){
+    if (length(rootDir) > 0 & exist) {
       data.frame(instDir = rootDir, version = verChar, installationType = installerType,stringsAsFactors = FALSE)
     }
   }) # end lapply
@@ -216,15 +241,13 @@ searchOSgeo4WGrass <- function(DL = "C:"){
   return(grassInstallations)
 }
 
-#' initialize \link{rgrass7}  for Linux
+#'@title Initialize and set up 'GRASS GIS' and \code{rgrass7} for the usage on 'Linux' OS
 #'@name getGrassParams4X
-#'@description initialize \link{rgrass7}  for Linux
-#'@details During the rsession you will have full access to GRASS7 GIS via the \link{rgrass7} wrappe. Additionally you may use also use the CLI calls of GRASS7.
-#'@usage getGrassParams4X()
-#'@param x raster or sp object 
-#'@param setDefaultGrass default = NULL wil force a search for GRASS You may provide a valid combination as c("C:\\OSGeo4W64","grass-7.0.5","osgeo4w")
+#'@description Initialize and set up \link{rgrass7}  for 'Linux'
+#'@details During the rsession you will have full access to GRASS7 GIS via the \link{rgrass7} wrappe. Additionally you may use also use the API calls of GRASS7 via the command line.
+#'@param setDefaultGrass default = NULL will force a search for 'GRASS GIS' You may provide a valid combination as c("C:/OSGeo4W64","grass-7.0.5","osgeo4w")
 #'@param MP mount point to be searched. default is "usr"
-#'@return getGrassParams4X initializes the usage of GRASS7.
+#'@param verSelect if TRUE you must interactivley selcect between alternative installations
 #'@export getGrassParams4X
 #'
 #'@examples
@@ -239,62 +262,62 @@ searchOSgeo4WGrass <- function(DL = "C:"){
 #' getGrassParams4X("/usr/local/bin/grass72")
 #' }
 
-getGrassParams4X <- function(setDefaultGrass=NULL, MP = "/usr"){
+getGrassParams4X <- function(setDefaultGrass=NULL, MP = "/usr",verSelect = FALSE){
   
-  # (R) set pathes  of GRASS  binaries depending on OS WINDOWS
-  if (is.null(setDefaultGrass)){
+  # (R) set pathes  of 'GRASS' binaries depending on 'Windows' OS
+  if (is.null(setDefaultGrass)) {
     
     # if no path is provided  we have to search
-    grassParams<-searchGRASSX(MP=MP)
+    grassParams <- searchGRASSX(MP = MP)
     
     # if just one valid installation was found take it
     if (nrow(grassParams) == 1) {  
-      grass.gis.base<-grassParams$instDir
+      grass.gis.base <- grassParams$instDir
       
       # if more than one valid installation was found you have to choose 
-    } else if (nrow(grassParams) > 1) {
+    } else if (nrow(grassParams) > 1 & verSelect ) {
       cat("You have more than one valid GRASS version\n")
       print(grassParams)
       cat("\n")
-      ver<- as.numeric(readline(prompt = "Please choose one:  "))
-      grass.gis.base<-grassParams$instDir[[ver]]
+      ver <- as.numeric(readline(prompt = "Please choose one:  "))
+      grass.gis.base <- grassParams$instDir[[ver]]
     }
     
     # if a setDefaultGrass was provided take this 
   } else {
-    grass.gis.base<-setDefaultGrass
+    grass.gis.base <- setDefaultGrass
   }
   return(grass.gis.base)
 }
 
-#'Search for valid GRASS7 installation(s) on Linux OS
+#'@title Search recursivly valid 'GRASS GIS' installation(s) at a given 'Linux' mount point
 #'@name searchGRASSX
-#'@description  search for valid GRASS installations at a given Linux mount point
+#'@description Search for valid 'GRASS GIS' installations at a given 'Linux' mount point
 #'@param MP default is /usr
-#'@return dataframe containing GRASS binary dir(s), version name(s) and installation type code(s)
+#'@return A dataframe containing 'GRASS GIS' binary folder(s), version name(s) and installation type code(s)
 #'@author Chris Reudenbach
 #'@export searchGRASSX
 #'
 #'@examples
 #' \dontrun{
-#' # get all valid GRASS installation folders in the /usr directory (typical location)
-#' grassParam<- searchGRASSX("~/")
+#' # get all valid 'GRASS GIS' installation folders in the /usr directory (typical location)
+#' searchGRASSX("~/usr")
 #' 
-#' # get all valid GRASS installation folders in the home directory
-#' grassParam<- searchGRASSX("~/")
+#' # get all valid 'GRASS GIS' installation folders in the home directory
+#' searchGRASSX("~/")
 #' }
 
 searchGRASSX <- function(MP = "/usr"){
-  rawGRASS<- system2("find", paste(MP," ! -readable -prune -o -type f -executable -iname 'grass??' -print"),stdout = TRUE)
+  rawGRASS <- system2("find", paste(MP," ! -readable -prune -o -type f -executable -iname 'grass??' -print"),stdout = TRUE)
   if (length(rawGRASS) > 0) {
     grassInstallations <- lapply(seq(length(rawGRASS)), function(i){
       # grep line containing GISBASE and extract the substring 
-      rootDir<- grep(readLines(rawGRASS),pattern = 'isbase = "',value = TRUE)
-      rootDir<- substr(rootDir, gregexpr(pattern = '"', rootDir)[[1]][1]+1, nchar(rootDir)-1)
-      verChar<- grep(readLines(rawGRASS),pattern = 'grass_version = "',value = TRUE)
-      verChar<- substr(verChar, gregexpr(pattern = '"', verChar)[[1]][1]+1, nchar(verChar)-1)
-      cmd<- grep(readLines(rawGRASS),pattern = 'cmd_name = "',value = TRUE)
-      cmd<- substr(cmd, gregexpr(pattern = '"', cmd)[[1]][1]+1, nchar(cmd)-1)
+      rootDir <- grep(readLines(rawGRASS),pattern = 'isbase = "',value = TRUE)
+      rootDir <- substr(rootDir, gregexpr(pattern = '"', rootDir)[[1]][1] + 1, nchar(rootDir) - 1)
+      verChar <- grep(readLines(rawGRASS),pattern = 'grass_version = "',value = TRUE)
+      verChar <- substr(verChar, gregexpr(pattern = '"', verChar)[[1]][1] + 1, nchar(verChar) - 1)
+      cmd <- grep(readLines(rawGRASS),pattern = 'cmd_name = "',value = TRUE)
+      cmd <- substr(cmd, gregexpr(pattern = '"', cmd)[[1]][1] + 1, nchar(cmd) - 1)
       
       # put it in data frame
       data.frame(instDir = rootDir, version = verChar, cmd = cmd , stringsAsFactors = FALSE)
@@ -305,57 +328,60 @@ searchGRASSX <- function(MP = "/usr"){
     return(grassInstallations)
   } else {
     warning(paste("Did not find any valid GRASS installation at mount point",MP))
-    return(grassInstallations<-NULL)
+    return(grassInstallations <- NULL)
   }
 }
 
 
 
-#'Set Windows OS environment variables for \link{rgrass7}
+#'@title Initializes and set up  access to 'GRASS GIS 7.xx' via the \link{rgrass7} wrapper or command line packages
 #'@name setGrassEnv4W
-#'@description  during a running rsession you will have full access to GRASS7 via the \link{rgrass7} wrapper or command line packages
+#'@description  Initializes and set up  access to 'GRASS GIS 7.xx' via the \link{rgrass7} wrapper or command line packages
 #'@param grassRoot  grass root directory i.e. "C:\\OSGEO4~1",
 #'@param grassVersion grass version name i.e. "grass-7.0.5"
-#'@param installationType two options "osgeo4w" and "NSIS"
+#'@param installationType two options "osgeo4w" as installed by the 'OSGeo4W'-installer and "NSIS" that is typical for a standalone installtion of 'GRASS GIS'.
 #'@param jpgmem jpeg2000 memory allocation size. Default is 1000000
-#'@return set all enviroment variables and additionally returns the GISBASE 
+#'@return Set all necessary environment variables and additionally returns the GISBASE directory as string.
 #'@author Chris Reudenbach
 #'@export setGrassEnv4W
 #'
 #'@examples
 #' \dontrun{
-#' # get all valid GRASS installation folders and params
+#' # get all valid 'GRASS GIS' installation folders and params
 #' grassParam<- setGrassEnv4W()
 #' }
 
-setGrassEnv4W<- function(grassRoot="C:\\OSGEO4~1",grassVersion="grass-7.0.5",installationType="osgeo4w",jpgmem=1000000){
-  
+setGrassEnv4W <- function(grassRoot="C:\\OSGEO4~1",
+                          grassVersion = "grass-7.0.5",
+                          installationType = "osgeo4W",
+                          jpgmem = 1000000){
+  if (!exists("GiEnv")) GiEnv <- new.env(parent=globalenv())  
   #.GRASS_CACHE <- new.env(FALSE parent=globalenv())
-  if (installationType == "osgeo4w"){
-    Sys.setenv(OSGEO4W_ROOT=grassRoot)
+  if (installationType == "osgeo4W") {
+    Sys.setenv(OSGEO4W_ROOT = grassRoot)
     # define GISBASE
-    grass.gis.base<-paste0(grassRoot,"\\apps\\grass\\",grassVersion)
-    Sys.setenv(GISBASE=grass.gis.base,envir = .GlobalEnv)
-    assign("SYS", "WinNat", envir=.GlobalEnv)
-    assign("addEXE", ".exe", envir=.GlobalEnv)
-    assign("WN_bat", "", envir=.GlobalEnv)
-    assign("legacyExec", "windows", envir=.GlobalEnv)
+    grass.gis.base <- paste0(grassRoot,"\\apps\\grass\\",grassVersion)
+    Sys.setenv(GISBASE = grass.gis.base,envir = GiEnv)
+    assign("SYS", "WinNat", envir = GiEnv)
+    assign("addEXE", ".exe", envir = GiEnv)
+    assign("WN_bat", "", envir = GiEnv)
+    assign("legacyExec", "windows", envir = GiEnv)
     
     
-    Sys.setenv(GRASS_PYTHON=paste0(Sys.getenv("OSGEO4W_ROOT"),"\\bin\\python.exe"),envir = .GlobalEnv)
-    Sys.setenv(PYTHONHOME=paste0(Sys.getenv("OSGEO4W_ROOT"),"\\apps\\Python27"),envir = .GlobalEnv)
-    Sys.setenv(PYTHONPATH=paste0(Sys.getenv("OSGEO4W_ROOT"),"\\apps\\grass\\",grassVersion,"\\etc\\python"),envir = .GlobalEnv)
-    Sys.setenv(GRASS_PROJSHARE=paste0(Sys.getenv("OSGEO4W_ROOT"),"\\share\\proj"),envir = .GlobalEnv)
-    Sys.setenv(PROJ_LIB=paste0(Sys.getenv("OSGEO4W_ROOT"),"\\share\\proj"),envir = .GlobalEnv)
-    Sys.setenv(GDAL_DATA=paste0(Sys.getenv("OSGEO4W_ROOT"),"\\share\\gdal"),envir = .GlobalEnv)
-    Sys.setenv(GEOTIFF_CSV=paste0(Sys.getenv("OSGEO4W_ROOT"),"\\share\\epsg_csv"),envir = .GlobalEnv)
-    Sys.setenv(FONTCONFIG_FILE=paste0(Sys.getenv("OSGEO4W_ROOT"),"\\etc\\fonts.conf"),envir = .GlobalEnv)
-    Sys.setenv(JPEGMEM=jpgmem,envir = .GlobalEnv)
-    Sys.setenv(FONTCONFIG_FILE=paste0(Sys.getenv("OSGEO4W_ROOT"),"\\bin\\gdalplugins"),envir = .GlobalEnv)
-    Sys.setenv(GISRC = paste(Sys.getenv("HOME"), "\\.grassrc7",  sep = ""),envir = .GlobalEnv)
+    Sys.setenv(GRASS_PYTHON = paste0(Sys.getenv("OSGEO4W_ROOT"),"\\bin\\python.exe"),envir = GiEnv)
+    Sys.setenv(PYTHONHOME = paste0(Sys.getenv("OSGEO4W_ROOT"),"\\apps\\Python27"),envir = GiEnv)
+    Sys.setenv(PYTHONPATH = paste0(Sys.getenv("OSGEO4W_ROOT"),"\\apps\\grass\\",grassVersion,"\\etc\\python"),envir = GiEnv)
+    Sys.setenv(GRASS_PROJSHARE = paste0(Sys.getenv("OSGEO4W_ROOT"),"\\share\\proj"),envir = GiEnv)
+    Sys.setenv(PROJ_LIB = paste0(Sys.getenv("OSGEO4W_ROOT"),"\\share\\proj"),envir = GiEnv)
+    Sys.setenv(GDAL_DATA = paste0(Sys.getenv("OSGEO4W_ROOT"),"\\share\\gdal"),envir = GiEnv)
+    Sys.setenv(GEOTIFF_CSV = paste0(Sys.getenv("OSGEO4W_ROOT"),"\\share\\epsg_csv"),envir = GiEnv)
+    Sys.setenv(FONTCONFIG_FILE = paste0(Sys.getenv("OSGEO4W_ROOT"),"\\etc\\fonts.conf"),envir = GiEnv)
+    Sys.setenv(JPEGMEM = jpgmem,envir = GiEnv)
+    Sys.setenv(FONTCONFIG_FILE = paste0(Sys.getenv("OSGEO4W_ROOT"),"\\bin\\gdalplugins"),envir = GiEnv)
+    Sys.setenv(GISRC = paste(Sys.getenv("HOME"), "\\.grassrc7",  sep = ""),envir = GiEnv)
     
     # set path variable
-    Sys.setenv(PATH=paste0(grass.gis.base,";",
+    Sys.setenv(PATH = paste0(grass.gis.base,";",
                            grassRoot,"\\apps\\Python27\\lib\\site-packages\\numpy\\core",";",
                            grassRoot,"\\apps\\grass\\",grassVersion,"\\bin",";",
                            grassRoot,"\\apps\\grass\\",grassVersion,"\\lib",";",
@@ -365,7 +391,7 @@ setGrassEnv4W<- function(grassRoot="C:\\OSGEO4~1",grassVersion="grass-7.0.5",ins
                            grassRoot,"\\bin",";",
                            grassRoot,"\\apps",";",
                            paste0(Sys.getenv("WINDIR"),"/WBem"),";",
-                           Sys.getenv("PATH")),envir = .GlobalEnv)
+                           Sys.getenv("PATH")),envir = GiEnv)
     
     # get list of all tools
     system(paste0(grassRoot,"/bin/o-help.bat"))
@@ -374,30 +400,30 @@ setGrassEnv4W<- function(grassRoot="C:\\OSGEO4~1",grassVersion="grass-7.0.5",ins
   # for the NSIS windows installer versions
   else {
     
-    Sys.setenv(GRASS_ROOT=grassRoot)
+    Sys.setenv(GRASS_ROOT = grassRoot)
     # define GISBASE
-    grass.gis.base<-grassRoot
-    Sys.setenv(GISBASE=grass.gis.base,envir = .GlobalEnv)
-    assign("SYS", "WinNat", envir=.GlobalEnv)
-    assign("addEXE", ".exe", envir=.GlobalEnv)
-    assign("WN_bat", "", envir=.GlobalEnv)
-    assign("legacyExec", "windows", envir=.GlobalEnv)
+    grass.gis.base <- grassRoot
+    Sys.setenv(GISBASE = grass.gis.base,envir = GiEnv)
+    assign("SYS", "WinNat", envir = GiEnv)
+    assign("addEXE", ".exe", envir = GiEnv)
+    assign("WN_bat", "", envir = GiEnv)
+    assign("legacyExec", "windows", envir = GiEnv)
     
     
-    Sys.setenv(GRASS_PYTHON=paste0(Sys.getenv("GRASS_ROOT"),"\\bin\\python.exe"),envir = .GlobalEnv)
-    Sys.setenv(PYTHONHOME=paste0(Sys.getenv("GRASS_ROOT"),"\\apps\\Python27"),envir = .GlobalEnv)
-    Sys.setenv(PYTHONPATH=paste0(Sys.getenv("GRASS_ROOT"),"\\apps\\grass\\",grassVersion,"\\etc\\python"),envir = .GlobalEnv)
-    Sys.setenv(GRASS_PROJSHARE=paste0(Sys.getenv("GRASS_ROOT"),"\\share\\proj"),envir = .GlobalEnv)
-    Sys.setenv(PROJ_LIB=paste0(Sys.getenv("GRASS_ROOT"),"\\share\\proj"),envir = .GlobalEnv)
-    Sys.setenv(GDAL_DATA=paste0(Sys.getenv("GRASS_ROOT"),"\\share\\gdal"),envir = .GlobalEnv)
-    Sys.setenv(GEOTIFF_CSV=paste0(Sys.getenv("GRASS_ROOT"),"\\share\\epsg_csv"),envir = .GlobalEnv)
-    Sys.setenv(FONTCONFIG_FILE=paste0(Sys.getenv("GRASS_ROOT"),"\\etc\\fonts.conf"),envir = .GlobalEnv)
-    Sys.setenv(JPEGMEM=jpgmem,envir = .GlobalEnv)
-    Sys.setenv(FONTCONFIG_FILE=paste0(Sys.getenv("GRASS_ROOT"),"\\bin\\gdalplugins"),envir = .GlobalEnv)
-    Sys.setenv(GISRC = paste(Sys.getenv("HOME"), "\\.grassrc7",  sep = ""),envir = .GlobalEnv)
+    Sys.setenv(GRASS_PYTHON = paste0(Sys.getenv("GRASS_ROOT"),"\\bin\\python.exe"),envir = GiEnv)
+    Sys.setenv(PYTHONHOME = paste0(Sys.getenv("GRASS_ROOT"),"\\apps\\Python27"),envir = GiEnv)
+    Sys.setenv(PYTHONPATH = paste0(Sys.getenv("GRASS_ROOT"),"\\apps\\grass\\",grassVersion,"\\etc\\python"),envir = GiEnv)
+    Sys.setenv(GRASS_PROJSHARE = paste0(Sys.getenv("GRASS_ROOT"),"\\share\\proj"),envir = GiEnv)
+    Sys.setenv(PROJ_LIB = paste0(Sys.getenv("GRASS_ROOT"),"\\share\\proj"),envir = GiEnv)
+    Sys.setenv(GDAL_DATA = paste0(Sys.getenv("GRASS_ROOT"),"\\share\\gdal"),envir = GiEnv)
+    Sys.setenv(GEOTIFF_CSV = paste0(Sys.getenv("GRASS_ROOT"),"\\share\\epsg_csv"),envir = GiEnv)
+    Sys.setenv(FONTCONFIG_FILE = paste0(Sys.getenv("GRASS_ROOT"),"\\etc\\fonts.conf"),envir = GiEnv)
+    Sys.setenv(JPEGMEM = jpgmem,envir = GiEnv)
+    Sys.setenv(FONTCONFIG_FILE = paste0(Sys.getenv("GRASS_ROOT"),"\\bin\\gdalplugins"),envir = GiEnv)
+    Sys.setenv(GISRC = paste(Sys.getenv("HOME"), "\\.grassrc7",  sep = ""),envir = GiEnv)
     
     # set path variable
-    Sys.setenv(PATH=paste0(grass.gis.base,";",
+    Sys.setenv(PATH = paste0(grass.gis.base,";",
                            grassRoot,"\\apps\\Python27\\lib\\site-packages\\numpy\\core",";",
                            grassRoot,"\\apps\\grass\\",grassVersion,"\\bin",";",
                            grassRoot,"\\apps\\grass\\",grassVersion,"\\lib",";",
@@ -407,7 +433,7 @@ setGrassEnv4W<- function(grassRoot="C:\\OSGEO4~1",grassVersion="grass-7.0.5",ins
                            grassRoot,"\\bin",";",
                            grassRoot,"\\apps",";",
                            paste0(Sys.getenv("WINDIR"),"/WBem"),";",
-                           Sys.getenv("PATH")),envir = .GlobalEnv)
+                           Sys.getenv("PATH")),envir = GiEnv)
     
   }
   
@@ -415,118 +441,108 @@ setGrassEnv4W<- function(grassRoot="C:\\OSGEO4~1",grassVersion="grass-7.0.5",ins
 }
 
 
-#'setOTBEnv set environ Params of OTB
+#'@title  Initializes and set up  access to the 'OTB' command line interface
 #'@name setOTBEnv
-#'@description  during a rsession you will have full access to the OTBcli  
-#'
-#'@param otbPath string contains path to otb binaries
-#'@param sagaCmd string contains the full string to call otb launcher
-#'
-#'@return 
-#' add otb pathes to the enviroment and creates global variables otbCmd
-#' @export setOTBEnv
-#'
+#'@description  Initializes and set up  access to the 'OTB' command line interface
+#'  
+#'@param binPathOtb  string contains the path to the 'OTB' binaries
+#'@param rootPathOtb string contains the full string to the root folder
+#'  containing the 'OTB' installation'
+#'@return Adds 'OTB' pathes to the enviroment and creates the variable global string variable \code{otbCmd}, that contains the path to the 'OTB' binaries.
+#'@export setOTBEnv
+#'  
 #'@examples
 #' \dontrun{
-#'## call it for a default OSGeo4W64 oinstallation of SAGA
-#'setOTBEnv()
+#'## example for the most common default OSGeo4W64 installation of OTB
+#'setOTBEnv(binPathOtb="C:\\OSGeo4W64\\bin\\",rootPathOtb="C:\\OSGeo4W64")
 #'}
 
-# "C:\\OSGeo4W64\\bin"
-# "C:\\OSGeo4W64"
-setOTBEnv <- function(defaultOtb = NULL,installationRoot=NULL){
+setOTBEnv <- function(binPathOtb = NULL, rootPathOtb = NULL){
   # check if running on a HRZMR Pool PC
-  defaultOtb<- checkPC("otb")   
-  if (substr(Sys.getenv("COMPUTERNAME"),1,5)=="PCRZP") {
-    defaultOtb <- shQuote("C:\\Program Files\\QGIS 2.14\\bin")
-    installationRoot <- shQuote("C:\\Program Files\\QGIS 2.14")
-    Sys.setenv(GEOTIFF_CSV=paste0(Sys.getenv("OSGEO4W_ROOT"),"\\share\\epsg_csv"),envir = .GlobalEnv)
-    
+  if (!exists("GiEnv")) GiEnv <- new.env(parent=globalenv()) 
+  if (substr(Sys.getenv("COMPUTERNAME"),1,5) == "PCRZP") {
+    binPathOtb <- checkPCDomain("otb")   
+    Sys.setenv(GEOTIFF_CSV = paste0(Sys.getenv("OSGEO4W_ROOT"),"\\share\\epsg_csv"),envir = GiEnv)
   } else {
-    
     # (R) set pathes  of otb modules and binaries depending on OS  
-    
-    if(Sys.info()["sysname"] == "Windows"){
-      
-      makGlobalVar("otbPath", defaultOtb)
-      add2Path(defaultOtb)
-      Sys.setenv(OSGEO4W_ROOT=installationRoot)
-      Sys.setenv(GEOTIFF_CSV=paste0(Sys.getenv("OSGEO4W_ROOT"),"\\share\\epsg_csv"),envir = .GlobalEnv)
-      
+    if (Sys.info()["sysname"] == "Windows") {
+      makGlobalVar("otbPath", binPathOtb)
+      add2Path(binPathOtb)
+      Sys.setenv(OSGEO4W_ROOT = rootPathOtb)
+      Sys.setenv(GEOTIFF_CSV = paste0(Sys.getenv("OSGEO4W_ROOT"),"\\share\\epsg_csv"),envir = GiEnv)
     } else {
       makGlobalVar("otbPath", "(usr/bin/")
     }
   }
-  return(defaultOtb)
+  return(binPathOtb)
 }
 
-#'search for valid OTB installations on a given Windows drive 
-#'@name searchOSgeo4WOTB
-#'@description  provides a pretty good estimation of valid OTB installations on your Windows system
+#'@title Search recursively for valid 'OTB' installation(s) on a 'Windows' OS
+#'@name searchOTBW
+#'@description  Search for valid 'OTB' installations on a 'Windows' OS
 #'@param DL drive letter default is "C:"
-#'@return a dataframe with the OTB root dir the Version name and the installation type
+#'@return A dataframe with the 'OTB' root folder(s) the version name(s) and the installation type(s).
 #'@author Chris Reudenbach
-#'@export searchOSgeo4WOTB
+#'@export searchOTBW
 #'
 #'@examples
 #' \dontrun{
 #'#### Examples how to use RSAGA and OTB bindings from R
 #'
 #' # get all valid OTB installation folders and params
-#' otbParam<- searchOSgeo4WOTB()
+#' searchOTBW()
 #' }
 
-searchOSgeo4WOTB <- function(DL = "C:") {
-  
-  
-  
-  if (substr(Sys.getenv("COMPUTERNAME"),1,5)=="PCRZP") {
+searchOTBW <- function(DL = "C:") {
+  if (!exists("GiEnv")) GiEnv <- new.env(parent=globalenv()) 
+  if (substr(Sys.getenv("COMPUTERNAME"),1,5) == "PCRZP") {
     defaultOtb <- shQuote("C:\\Program Files\\QGIS 2.14\\bin")
-    otbInstallations<- data.frame(instDir = shQuote("C:\\Program Files\\QGIS 2.14\\bin"), installationType = "osgeo4wOTB",stringsAsFactors = FALSE)
-    Sys.setenv(GEOTIFF_CSV=paste0(Sys.getenv("OSGEO4W_ROOT"),"\\share\\epsg_csv"),envir = .GlobalEnv)
-    
+    otbInstallations <- data.frame(instDir = shQuote("C:\\Program Files\\QGIS 2.14\\bin"), installationType = "osgeo4wOTB",stringsAsFactors = FALSE)
+    Sys.setenv(GEOTIFF_CSV = paste0(Sys.getenv("OSGEO4W_ROOT"),"\\share\\epsg_csv"),envir = GiEnv)
   } else {
-    
     # trys to find a osgeo4w installation on the whole C: disk returns root directory and version name
     # recursive dir for otb*.bat returns all version of otb bat files
-    cat("\nsearching for OTB installations - this may take a while\n")
-    cat("Alternatively you can provide a path like: C:\\OSGeo4W64\\bin\\\n")
-    cat("You can also provide a installation type like: 'osgeo4w64OTB'\n")
+    cat("\nsearching for Orfeo Toolbox installations - this may take a while\n")
+    cat("For providing the path manually see ?searchOTBW \n")
     rawOTB <- system(paste0("cmd.exe /c dir /B /S ",DL,"\\","otbcli.bat"),intern = TRUE)
     
     # trys to identify valid otb installations and their version numbers
     otbInstallations <- lapply(seq(length(rawOTB)), function(i){
       # convert codetable according to cmd.exe using type
       batchfileLines <- rawOTB[i]
-      installerType<-""
-      # if the the tag "OSGEO4W" exists set installationType
-      if (length(unique(grep(paste("OSGeo4W64", collapse = "|"), rawOTB[i], value = TRUE))) > 0){
-        rootDir<-unique(grep(paste("OSGeo4W64", collapse = "|"), rawOTB[i], value = TRUE))
-        rootDir<- substr(rootDir,1, gregexpr(pattern = "otbcli.bat", rootDir)[[1]][1] - 1)
-        installDir<-substr(rootDir,1, gregexpr(pattern = "bin", rootDir)[[1]][1] - 2)
-        installerType<- "osgeo4w64OTB"
+      installerType <- ""
+      # if the the tag "OSGEO4W64" exists set installationType
+      if (length(unique(grep(paste("OSGeo4W64", collapse = "|"), rawOTB[i], value = TRUE))) > 0) {
+        rootDir <- unique(grep(paste("OSGeo4W64", collapse = "|"), rawOTB[i], value = TRUE))
+        rootDir <- substr(rootDir,1, gregexpr(pattern = "otbcli.bat", rootDir)[[1]][1] - 1)
+        installDir <- substr(rootDir,1, gregexpr(pattern = "bin", rootDir)[[1]][1] - 2)
+        installerType <- "osgeo4w64OTB"
       }    
       
       # if the the tag "OSGEO4W" exists set installationType
-      else if (length(unique(grep(paste("OSGeo4W", collapse = "|"), rawOTB[i], value = TRUE))) > 0){
-        rootDir<-unique(grep(paste("OSGeo4W", collapse = "|"), rawOTB[i], value = TRUE))
-        rootDir<- substr(rootDir,1, gregexpr(pattern = "otbcli.bat", rootDir)[[1]][1] - 1)
-        installDir<-substr(rootDir,1, gregexpr(pattern = "bin", rootDir)[[1]][1] - 2)
-        installerType<- "osgeo4wOTB"
+      else if (length(unique(grep(paste("OSGeo4W", collapse = "|"), rawOTB[i], value = TRUE))) > 0) {
+        rootDir <- unique(grep(paste("OSGeo4W", collapse = "|"), rawOTB[i], value = TRUE))
+        rootDir <- substr(rootDir,1, gregexpr(pattern = "otbcli.bat", rootDir)[[1]][1] - 1)
+        installDir <- substr(rootDir,1, gregexpr(pattern = "bin", rootDir)[[1]][1] - 2)
+        installerType <- "osgeo4wOTB"
       }
       # if the the tag "QGIS" exists set installationType
-      else if (length(unique(grep(paste("QGIS", collapse = "|"), batchfileLines, value = TRUE))) > 0){
-        rootDir<-unique(grep(paste("QGIS", collapse = "|"), rawOTB[i], value = TRUE))
-        rootDir<- substr(rootDir,1, gregexpr(pattern = "otbcli.bat", rootDir)[[1]][1] - 1)
-        installDir<-substr(rootDir,1, gregexpr(pattern = "bin", rootDir)[[1]][1] - 2)
-        installerType<- "qgisOTB"
+      else if (length(unique(grep(paste("QGIS", collapse = "|"), batchfileLines, value = TRUE))) > 0) {
+        rootDir <- unique(grep(paste("QGIS", collapse = "|"), rawOTB[i], value = TRUE))
+        rootDir <- substr(rootDir,1, gregexpr(pattern = "otbcli.bat", rootDir)[[1]][1] - 1)
+        installDir <- substr(rootDir,1, gregexpr(pattern = "bin", rootDir)[[1]][1] - 2)
+        installerType <- "qgisOTB"
       }
-      
+      # if the the tag "OTB-" exists set installationType
+      else if (length(unique(grep(paste("OTB-", collapse = "|"), batchfileLines, value = TRUE))) > 0) {
+        rootDir <- unique(grep(paste("OTB-", collapse = "|"), rawOTB[i], value = TRUE))
+        rootDir <- substr(rootDir,1, gregexpr(pattern = "otbcli.bat", rootDir)[[1]][1] - 1)
+        installDir <- substr(rootDir,1, gregexpr(pattern = "bin", rootDir)[[1]][1] - 2)
+        installerType <- "OTB"
+      }
       # put the existing GISBASE directory, version number  and installation type in a data frame
-      data.frame(binDir = rootDir, baseDir=installDir, installationType = installerType,stringsAsFactors = FALSE)
-      
+      data.frame(binDir = rootDir, baseDir = installDir, installationType = installerType, stringsAsFactors = FALSE)
     }) # end lapply
-    
     # bind the df lines
     otbInstallations <- do.call("rbind", otbInstallations)
   }
@@ -534,48 +550,113 @@ searchOSgeo4WOTB <- function(DL = "C:") {
 }
 
 
-###  raster or vector class
-#'@export getSimpleClass
-getSimpleClass <- function(obj) {
+
+#'@title Checks if x is a raster or sp object
+#'@name getSpatialClass
+#'@description  Checks if x is a raster or sp object
+#'@param obj R raster* or sp object
+#'@author Chris Reudenbach
+#'@examples
+#' \dontrun{
+#' # add path
+#' getSpatialClass(x)
+#' }
+#'@export getSpatialClass
+getSpatialClass <- function(obj) {
   if (class(obj) %in% c("RasterLayer", "RasterStack",
                         "RasterBrick", "Satellite",
                         "SpatialGridDataFrame",
-                        "SpatialPixelsDataFrame")) "rst" else "vec"
+                        "SpatialPixelsDataFrame")) {"rst"} 
+  else if (class(obj) %in% c("SpatialPointsDataFrame", "SpatialPoints",
+                             "SpatialPolygonsDataFrame",
+                             "SpatialPolygons",
+                             "SpatialLinesDataFrame",
+                             "SpatialLines")) {"vec"}
 }
 
-#'@export checkPC
-checkPC<- function (binaryName=NULL,checkName="PCRZP") {
-  if (substr(Sys.getenv("COMPUTERNAME"),1,5)==checkName) {
-    if (binaryName == "saga"){ 
+#'@title Checks if running on a specified computer domain
+#'@name checkPCDomain
+#'@description  Checks if the computer belongs to the Marburg Universitys computer pools
+#'@param cliCode code of the sofware currently \code{saga} and \code{otb} are supported
+#'@param prefixPC contains the an arbitrary part of the computer name. It always starts with the first letter.
+#'@author CR
+#'@examples
+#' \dontrun{
+#' # add path
+#' checkPCDomain("saga",prefixPC="PCRZP")
+#' }
+#'@export checkPCDomain
+checkPCDomain <- function(cliCode=NULL, prefixPC="PCRZP") {
+  if (!exists("GiEnv")) GiEnv <- new.env(parent=globalenv()) 
+  if (substr(Sys.getenv("COMPUTERNAME"),1,nchar(prefixPC)) == substr(prefixPC,1,nchar(prefixPC))) {
+    if (cliCode == "saga") { 
       defaultSAGA <- shQuote(c("C:\\Program Files\\QGIS 2.14\\apps\\saga","C:\\Program Files\\QGIS 2.14\\apps\\saga\\modules"))
-      return(sagaPath)
+      return(defaultSAGA)
     } else {
-      return(sagaPath=NULL)  
+      return(defaultSAGA = NULL)  
     }
-  } else if (binaryName == "otb") {
+  } else if (cliCode == "otb") {
     defaultOtb <- shQuote("C:\\Program Files\\QGIS 2.14\\bin")
-    installationRoot <- shQuote("C:\\Program Files\\QGIS 2.14")
-    Sys.setenv(GEOTIFF_CSV=paste0(Sys.getenv("OSGEO4W_ROOT"),"\\share\\epsg_csv"),envir = .GlobalEnv)
-    otbInstallations<- data.frame(instDir = shQuote("C:\\Program Files\\QGIS 2.14\\bin"), installationType = "osgeo4wOTB",stringsAsFactors = FALSE)
-    
+    rootPathOtb <- shQuote("C:\\Program Files\\QGIS 2.14")
+    Sys.setenv(GEOTIFF_CSV = paste0(Sys.getenv("OSGEO4W_ROOT"),"\\share\\epsg_csv"),envir = GiEnv)
+    otbInstallations <- data.frame(instDir = shQuote("C:\\Program Files\\QGIS 2.14\\bin"), installationType = "osgeo4wOTB", stringsAsFactors = FALSE)
+    return(otbInstallations)
   }
   
   
 }
+
+#'@title Adds a defined variable and value to the global search path
+#'@name add2Path
+#'@description  Adds a variable to the global search path of the current environment
+#'@param newPath the path that is added
+#'@author Chris Reudenbach
+#'@examples
+#' \dontrun{
+#' # add path
+#' addPath("pathtosomewhere")
+#' }
 #'@export add2Path
-add2Path<- function(newPath) {
-  exist<-FALSE
-  if(Sys.info()["sysname"] == "Windows"){
-    del<-";"  
+#'
+add2Path <- function(newPath) {
+  exist <- FALSE
+  if (Sys.info()["sysname"] == "Windows") {
+    del <- ";"  
   } else {
-    del<-":"  
+    del <- ":"  
   } 
-  p<- Sys.getenv("PATH")
-  if(substr(p, 1,nchar(newPath)) == newPath){
-    exist<-TRUE
+  p <- Sys.getenv("PATH")
+  if (substr(p, 1,nchar(newPath)) == newPath) {
+    exist <- TRUE
   }
   # if not exist append path to systempath
-  if (!exist){
-    Sys.setenv(PATH=paste0(newPath,del,Sys.getenv("PATH")))
+  if (!exist) {
+    Sys.setenv(PATH = paste0(newPath,del,Sys.getenv("PATH")))
   }
+}
+
+#'@title Generates a variable with a certain value in the R environment
+#'@name makGlobalVar
+#' @description  Generates a variable with a certain value in the R environment
+#' @param name character string name of the variable
+#' @param value character string value of the variable
+#'@export makGlobalVar 
+#'@examples
+#' \dontrun{
+#'
+#' # creates the global var \code{pathToData} with the value \code{~/home/data}
+#' makGlobalVar("pathToData","~/home/data") 
+#' 
+#' }
+#' 
+makGlobalVar <- function(name,value) {
+  if (!exists("GiEnv")) GiEnv <- new.env(parent=globalenv())  
+  if (exists(name, envir = GiEnv)) {
+    #warning(paste0("The variable '", name,"' already exist in .GlobalEnv"))
+    assign(name, value, envir = GiEnv, inherits = TRUE)
+    #cat("add variable ",name,"=",value," to global GiEnv\n")
+  } else {
+    assign(name, value, envir = GiEnv, inherits = TRUE)
+    #cat("add variable ",name,"=",value," to global GiEnv\n")
+  } 
 }
