@@ -30,7 +30,7 @@ gheatMapGRASS <- function(fNinput,retSP=FALSE,radius=50){
                      output = paste0(pd_gi_run,"rt_heatmap_trees_",as.character(radius),".tif"),
                      type="Float64")
  
-  heatTrees <- rgdal::readOGR(pd_gi_run,"rt_cluster_trees")
-  if (retSP) return( clustTrees) 
+  heatTrees <- rgdal::readOGR(pd_gi_run,"rt_heatmap_trees")
+  if (retSP) return( heatTrees) 
 }
 
