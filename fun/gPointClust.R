@@ -1,6 +1,6 @@
-# ------------- GRASS utility function for raster to point conversion
-# (GRASS)   raster to vector points 
-ras2vecpoiGRASS <- function(fNinput,retSP=FALSE){
+# ------------- GRASS utility function for point clustering
+
+gPointClust <- function(fNinput,retSP=FALSE,radius=50){
   # (GRASS) import
   rgrass7::execGRASS('r.import',  
                      flags=c('o',"overwrite","quiet"),
@@ -21,19 +21,15 @@ ras2vecpoiGRASS <- function(fNinput,retSP=FALSE){
                      flags=c("2","b","overwrite","quiet"),
                      input="rt_treeNodes",
                      output="rt_cluster_trees",
-                     min=50,
+                     min=radius,
                      layer="3",
                      method="density")
   
-  rgrass7::execGRASS('v.colors',  
-                     map="rt_treeNodes",
-                     layer="2",
-                     use="cat",
-                     color="random")
+
   rgrass7::execGRASS('v.out.ogr',  
                      flags = c("overwrite","quiet"),
                      input = "rt_cluster_trees",
-                     output = paste0(pd_gi_run,"rt_cluster_trees.shp"),
+                     output = paste0(pd_gi_run,"rt_cluster_trees_",as.character(radius),".shp"),
                      format = "ESRI_Shapefile")
  
   clustTrees <- rgdal::readOGR(pd_gi_run,"rt_cluster_trees")
