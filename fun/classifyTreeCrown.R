@@ -3,28 +3,28 @@
 # postclassification of tree crown areas 
 # returns crown polygons and tree position as derived by the centroids
 # see also: https://github.com/logmoc/msc-phygeo-class-of-2016-creuden
-
+#
 classifyTreeCrown <- function(crownFn,segType="2", 
                               funNames = c("eccentricityboundingbox","solidity"),
-                              thChmAltitude = 5, 
+                              minTreeAlt = 5, 
                               crownMinArea = 3, 
                               crownMaxArea =150, 
                               solidity = 1, 
-                              thWidthLengthRatio = 0.5) {
+                              WLRatio = 0.5) {
   # read crown vector data set
   crownarea <- rgdal::readOGR(dirname(crownFn),tools::file_path_sans_ext(basename(crownFn)), verbose = FALSE)
   crownarea@proj4string <- sp::CRS("+proj=utm +zone=32 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs")
   # calculate area
   crownarea@data$area <- rgeos::gArea(crownarea,byid = TRUE)
   # filter for min, tree height and min max crown area
-  crownarea <-  crownarea[crownarea@data$crownsHeigh >= thChmAltitude ,]
+  crownarea <-  crownarea[crownarea@data$crownsHeigh >= minTreeAlt ,]
   crownarea <- crownarea[crownarea@data$area > crownMinArea & 
                            crownarea@data$area < crownMaxArea,]
   # calculate more metrics
   crownarea <- caMetrics(crownarea,funNames = funNames)
   #  filter for solidity and WL ratio
   crowns <- crownarea[as.numeric(crownarea@data$solidity) != solidity &
-                        as.numeric(crownarea@data$eccentricityboundingbox) > thWidthLengthRatio ,]
+                        as.numeric(crownarea@data$eccentricityboundingbox) > WLRatio ,]
   # calculate centroids as synthetic trees and ass all knoledge from the crowns
   sT <- rgeos::gCentroid(crowns,byid = TRUE)
   crowns@data$xcoord <- sT@coords[,1]
