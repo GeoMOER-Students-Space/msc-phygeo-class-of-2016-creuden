@@ -131,7 +131,7 @@ solidity      <- 1.0 # solidity
 # --- watershed segementation (imagery_segmentation 0) for segType=2
 is0_output    <- 0   # 0= seed value 1=segment id
 is0_join      <- 1     # 0=no join, 1=seed2saddle diff, 2=seed2seed diff
-is0_thresh    <- 2.5 # threshold for join difference in m
+is0_thresh    <- 5.5 # threshold for join difference in m
 #
 # --- growing segementation (imagery_segmentation 3) for segType=3
 is3_leafsize  <- 8
@@ -270,6 +270,7 @@ if (segType == 1) {
                                       crownMaxArea = crownMaxArea, 
                                       solidity = solidity, 
                                       WLRatio = WLRatio)
+  pixvalues <- basicExtraction(x = chmR,fN = trees_crowns_2[[2]],responseCat = "NAME")
   # ----------------------
   #
   # in addition we derive alternatively trees from the initial seedings 
@@ -284,6 +285,7 @@ if (segType == 1) {
   maskCrown <-  demR * 0.0
   # rasterize is much to slow for big vec data 
   # so we do it the long run
+  
   # raster::rasterize(crowns,mask=TRUE,rawCrowns)
   raster::writeRaster(rawTrees,paste0(pd_gi_run,"rawTrees.tif"),overwrite = TRUE)
   raster::writeRaster(maskCrown,paste0(pd_gi_run,"maskCrown.tif"),overwrite = TRUE)
