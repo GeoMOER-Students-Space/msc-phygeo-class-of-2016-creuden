@@ -284,7 +284,6 @@ if (segType == 1) {
   maskCrown <-  demR * 0.0
   # rasterize is much to slow for big vec data 
   # so we do it the long run
-  
   # raster::rasterize(crowns,mask=TRUE,rawCrowns)
   raster::writeRaster(rawTrees,paste0(pd_gi_run,"rawTrees.tif"),overwrite = TRUE)
   raster::writeRaster(maskCrown,paste0(pd_gi_run,"maskCrown.tif"),overwrite = TRUE)
