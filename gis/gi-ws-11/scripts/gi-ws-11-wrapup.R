@@ -106,7 +106,7 @@ link2GI::linkGRASS7(demR)
 #             within an imagery and uses a decision tree method to grow individual crowns
 #             all itc_ params are used
 #
-segType       <- 2
+segType       <- 3
 #
 # ------- gauss filter -------------------------------------------------------
 gauss         <- FALSE # if TRUE chm filtering will be applied as first step

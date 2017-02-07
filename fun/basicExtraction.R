@@ -9,7 +9,7 @@ basicExtraction <- function(x,fN,nsamples=10000,responseCat="id"){
   exValDF       <- getPixVal(imgStack = imgStack,
                              vecObj = vecObj,
                              responseCol = responseCat)
-  exValDF$class <- factor(exValDF$class)
+  #exValDF$class <- factor(exValDF$class)
   return(exValDF)
 }
 
@@ -43,9 +43,9 @@ importVec<- function(fN){
 getPixVal<- function(imgStack=NULL,vecObj=NULL,responseCol=NULL){
   #extract training Area pixel values
   exValDF = data.frame(matrix(vector(), nrow = 0, ncol = length(names(imgStack)) + 1))   
-  for (i in 1:length(unique(vecObj[[responseCol]]))){
-    category <- unique(vecObj[[responseCol]])[i]
-    if (i %% 100 == 0)  cat("\n extracting cat: ",levels(category)[i]," no: ",i," of: ",length(unique(vecObj[[responseCol]])))
+  for (i in 1:length(vecObj[[responseCol]])){
+    category <- vecObj[[responseCol]][i]
+    if (i %% 100 == 0)  cat("\n extracting cat: ",category," no: ",i," of: ",length(unique(vecObj[[responseCol]])))
     categorymap <- vecObj[vecObj[[responseCol]] == category,]
     dataSet <- raster::extract(imgStack, categorymap)
     dataSet <- lapply(dataSet, function(x){cbind(x, class = as.numeric(rep(category, nrow(x))))})
