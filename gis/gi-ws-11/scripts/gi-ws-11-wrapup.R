@@ -398,13 +398,15 @@ if (segType == 1) {
                        " -CLASS_ID 1.000000",
                        " -SPLIT 1"),intern = TRUE)
   
-  trees_crowns_2 <- classifyTreeCrown(crownFn = paste0(pd_gi_run,"crownsHeight.shp"),segType = 2, 
+  trees_crowns_3 <- classifyTreeCrown(crownFn = paste0(pd_gi_run,"crownsHeight.shp"),segType = 2, 
                                       funNames = c("eccentricityboundingbox","solidity"),
                                       minTreeAlt = minTreeAlt, 
                                       crownMinArea = crownMinArea, 
                                       crownMaxArea = crownMaxArea, 
                                       solidity = solidity, 
                                       WLRatio = WLRatio)
+  pixvalues <- basicExtraction(x = chmR,fN = trees_crowns_2[[2]],responseCat = "ID")
+  
   #  TODO postclassification stuff
   
   
