@@ -63,7 +63,9 @@ createMocFolders(filepath_base)
 getSessionPathes(filepath_git = filepath_base, sessNo = activeSession,courseCode = "gi")
 # set working directory
 setwd(pd_gi_run)
-#
+# crop window
+crop= TRUE
+ext<-raster::extent(476750, 478220, 5631740,5632760)
 # define the used input file(s)
 dsmFn  <- "geonode-lidar_dsm_01m.tif"  # surface model
 demFn  <- "geonode-lidar_dem_01m.tif"  # elevation model
@@ -71,11 +73,19 @@ pcagFn <- "geonode-lidar_pcag_01m.tif" # counts above ground
 pcgrFn <- "geonode-lidar_pcgr_01m.tif" # ground counts
 rgbFn  <- "geonode-ortho_muf_1m.tif"   # rgb ortho image
 #  read the input file(s) into a R raster
-demR <- raster::raster(paste0(pd_gi_input,demFn))
-dsmR <- raster::raster(paste0(pd_gi_input,dsmFn))
-pcagR <- raster::raster(paste0(pd_gi_input,pcagFn))
-pcgrR <- raster::raster(paste0(pd_gi_input,pcgrFn))
-rgbR <- raster::raster(paste0(pd_gi_input,rgbFn))
+if (crop) {
+demR <- raster::crop(raster::raster(paste0(pd_gi_input,demFn)),ext)
+dsmR <- raster::crop(raster::raster(paste0(pd_gi_input,dsmFn)),ext)
+pcagR <- raster::crop(raster::raster(paste0(pd_gi_input,pcagFn)),ext)
+pcgrR <- raster::crop(raster::raster(paste0(pd_gi_input,pcgrFn)),ext)
+rgbR <- raster::crop(raster::raster(paste0(pd_gi_input,rgbFn)),ext)
+} else {
+  demR <- raster::raster(paste0(pd_gi_input,demFn))
+  dsmR <- raster::raster(paste0(pd_gi_input,dsmFn))
+  pcagR <- raster::raster(paste0(pd_gi_input,pcagFn))
+  pcgrR <- raster::raster(paste0(pd_gi_input,pcgrFn))
+  rgbR <- raster::raster(paste0(pd_gi_input,rgbFn))  
+}
 # define EPSG code
 EPSG <- 25832
 #
@@ -88,7 +98,8 @@ link2GI::linkSAGA()
 link2GI::linkGRASS7(demR)
 #
 #--------- START of the thematic stuff ---------------------------------------
-#
+
+
 #
 #-------- segmentation strategy -----------------------------------------------
 # segType = 1: treecrown segmentation using channel network and drainage basins (SAGA ta_channels 5)
@@ -135,11 +146,11 @@ is0_thresh    <- 5.5 # threshold for join difference in m
 #
 # --- growing segementation (imagery_segmentation 3) for segType=3
 is3_leafsize  <- 8
-is3_normalize <- 1
+is3_normalize <- 0
 is3_neighbour <- 1
 is3_method    <- 0
-is3_sig1      <- 0.100000
-is3_sig2      <- 0.100000
+is3_sig1      <- 1.100000
+is3_sig2      <- 1.100000
 is3_threshold <- 0.000000
 #
 #
@@ -190,7 +201,7 @@ invChmR[invChmR > -minTreeAlt] <- minTreeAlt
 raster::writeRaster(invChmR,paste0(pd_gi_run,"iChm.tif"),
                     overwrite = TRUE)
 if (gauss)  ret <- system(paste0(sagaCmd,' grid_filter 1 ',
-                                 ' -INPUT ',pd_gi_run,"iChm.sdat",
+                                 ' -INPUT ',pd_gi_run,"iChm.sgrd",
                                  ' -RESULT ',pd_gi_run,"iChm.sgrd",
                                  ' -SIGMA ',gsigma,
                                  ' -MODE 1',
@@ -334,24 +345,50 @@ if (segType == 1) {
   # ----------  segType = 3 -----------------------------------------------------
   # 
 } else if (segType == 3) {
-  #
-  system(paste0(sagaCmd," shapes_grid ", 9 ,
-                " -GRID ","chm.sgrd",
-                " -MAXIMA ",path_run,"maxChm.shp"))
-  # saga_cmd imagery_segmentation 3 -SEEDS= -FEATURES=iChm.sgrd;hFdensity.sgrd; -SEGMENTS= -SIMILARITY= -TABLE= -NORMALIZE -NEIGHBOUR=1 -METHOD=0 -SIG_1=0.100000 -SIG_2=0.100000 -THRESHOLD=0.000000 -LEAFSIZE=8
-  system(paste0(sagaCmd, "imagery_segmentation 3 ",
-                " -SEEDS     "   ,pd_gi_run,"maxChm.shp",
-                " -FEATURES  "   ,pd_gi_run,"chm.sgrd",";",pd_gi_run,"hFdensity.sgrd",
-                " -SEGMENTS  "   ,pd_gi_run,"segment.sgrd",
-                " -LEAFSIZE  "   ,is3_leafsize,
+  # create local maxima 
+  system(paste0(sagaCmd," shapes_grid 9 ", 
+                " -GRID ",pd_gi_run,"chm.sgrd",
+                " -MAXIMA ",pd_gi_run,"maxChm.shp"))
+  # create raw file to raster
+  tmp <- demR * 0
+  tmp[tmp@data@values == 0]<-NA
+  raster::writeRaster(tmp,paste0(pd_gi_run,"seeds.tif"),overwrite = TRUE)  
+  
+  # rasterize and convert the seed data
+  ret <- system(paste0("gdal_rasterize ",
+                       pd_gi_run,"maxChm.shp ", 
+                       pd_gi_run,"seeds.sdat",
+                       " -l maxChm",
+                       " -a Z"),intern = TRUE)            
+  system(paste0(sagaCmd," grid_tools 15 ", 
+                " -INPUT ",pd_gi_run,"seeds.sgrd",
+                " -RESULT ",pd_gi_run,"seeds.sgrd",
+                " -METHOD 0",
+                " -OLD 0.00",
+                " -NEW 0.00",
+                " -SOPERATOR 0",
+                " -NODATAOPT 0",
+                " -NODATA 0.0",
+                "  -RESULT_NODATA_CHOICE 1", 
+                " -RESULT_NODATA_VALUE 0.000000"))
+  
+      # SAGA Seeded Region Growing segmentation (imagery_segmentation 3)
+  system(paste0(sagaCmd, " imagery_segmentation 3 ",
+                " -SEEDS "   ,pd_gi_run,"seeds.tif",
+                " -FEATURES "   ,pd_gi_run,"chm.sgrd",
+                " -SEGMENTS "   ,pd_gi_run,"seg.sdat",
+                " -LEAFSIZE "   ,is3_leafsize,
                 " -NORMALIZE ",is3_normalize,
                 " -NEIGHBOUR ",is3_neighbour, 
-                " -METHOD    ",is3_method,
-                " -SIG_1     ",is3_sig1,
-                " -SIG_2     ",is3_sig2,
+                " -METHOD ",is3_method,
+                " -SIG_1 ",is3_sig1,
+                " -SIG_2 ",is3_sig2,
                 " -THRESHOLD ",is3_threshold))
-  #  
-  # ----------  segType = 2 -----------------------------------------------------
+  
+  #  TODO postclassification stuff
+  
+  
+  # ----------  segType = 4 -----------------------------------------------------
   #  
 } else if (segType == 4) {
   require(itcSegment)
