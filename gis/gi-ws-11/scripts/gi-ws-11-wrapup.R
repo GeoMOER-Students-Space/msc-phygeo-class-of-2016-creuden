@@ -346,6 +346,7 @@ if (segType == 1) {
   # 
 } else if (segType == 3) {
   # create local maxima 
+  # create local maxima 
   system(paste0(sagaCmd," shapes_grid 9 ", 
                 " -GRID ",pd_gi_run,"chm.sgrd",
                 " -MAXIMA ",pd_gi_run,"maxChm.shp"))
@@ -357,12 +358,17 @@ if (segType == 1) {
   # rasterize and convert the seed data
   ret <- system(paste0("gdal_rasterize ",
                        pd_gi_run,"maxChm.shp ", 
-                       pd_gi_run,"seeds.sdat",
+                       pd_gi_run,"seeds.tif",
                        " -l maxChm",
                        " -a Z"),intern = TRUE)            
+  gdalUtils::gdalwarp(paste0(pd_gi_run,"seeds.tif"),
+                      paste0(pd_gi_run,"seeds.sdat"), 
+                      of = 'SAGA',
+                      overwrite = TRUE,
+                      verbose = FALSE) 
   system(paste0(sagaCmd," grid_tools 15 ", 
                 " -INPUT ",pd_gi_run,"seeds.sgrd",
-                " -RESULT ",pd_gi_run,"seeds.sgrd",
+                " -RESULT ",pd_gi_run,"seeds2.sgrd",
                 " -METHOD 0",
                 " -OLD 0.00",
                 " -NEW 0.00",
@@ -372,11 +378,11 @@ if (segType == 1) {
                 "  -RESULT_NODATA_CHOICE 1", 
                 " -RESULT_NODATA_VALUE 0.000000"))
   
-      # SAGA Seeded Region Growing segmentation (imagery_segmentation 3)
+  # SAGA Seeded Region Growing segmentation (imagery_segmentation 3)
   system(paste0(sagaCmd, " imagery_segmentation 3 ",
-                " -SEEDS "   ,pd_gi_run,"seeds.tif",
+                " -SEEDS "   ,pd_gi_run,"seeds2.sgrd",
                 " -FEATURES "   ,pd_gi_run,"chm.sgrd",
-                " -SEGMENTS "   ,pd_gi_run,"seg.sdat",
+                " -SEGMENTS "   ,pd_gi_run,"crownsHeight.sgrd",
                 " -LEAFSIZE "   ,is3_leafsize,
                 " -NORMALIZE ",is3_normalize,
                 " -NEIGHBOUR ",is3_neighbour, 
@@ -385,6 +391,20 @@ if (segType == 1) {
                 " -SIG_2 ",is3_sig2,
                 " -THRESHOLD ",is3_threshold))
   
+  ret <- system(paste0(sagaCmd, " shapes_grid 6 ",
+                       " -GRID ",pd_gi_run,"crownsHeight.sgrd",
+                       " -POLYGONS ",pd_gi_run,"crownsHeight.shp",
+                       " -CLASS_ALL 1",
+                       " -CLASS_ID 1.000000",
+                       " -SPLIT 1"),intern = TRUE)
+  
+  trees_crowns_2 <- classifyTreeCrown(crownFn = paste0(pd_gi_run,"crownsHeight.shp"),segType = 2, 
+                                      funNames = c("eccentricityboundingbox","solidity"),
+                                      minTreeAlt = minTreeAlt, 
+                                      crownMinArea = crownMinArea, 
+                                      crownMaxArea = crownMaxArea, 
+                                      solidity = solidity, 
+                                      WLRatio = WLRatio)
   #  TODO postclassification stuff
   
   
