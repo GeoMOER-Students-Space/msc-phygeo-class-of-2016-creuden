@@ -65,7 +65,7 @@ getSessionPathes(filepath_git = filepath_base, sessNo = activeSession,courseCode
 setwd(pd_gi_run)
 # crop window
 crop= TRUE
-ext<-raster::extent(476750, 478220, 5631740,5632760)
+ext<-raster::extent(477750, 478220, 5632340,5632760)
 # define the used input file(s)
 dsmFn  <- "geonode-lidar_dsm_01m.tif"  # surface model
 demFn  <- "geonode-lidar_dem_01m.tif"  # elevation model
@@ -78,7 +78,7 @@ demR <- raster::crop(raster::raster(paste0(pd_gi_input,demFn)),ext)
 dsmR <- raster::crop(raster::raster(paste0(pd_gi_input,dsmFn)),ext)
 pcagR <- raster::crop(raster::raster(paste0(pd_gi_input,pcagFn)),ext)
 pcgrR <- raster::crop(raster::raster(paste0(pd_gi_input,pcgrFn)),ext)
-rgbR <- raster::crop(raster::raster(paste0(pd_gi_input,rgbFn)),ext)
+rgbR <- raster::crop(raster::stack(paste0(pd_gi_input,rgbFn)),ext)
 } else {
   demR <- raster::raster(paste0(pd_gi_input,demFn))
   dsmR <- raster::raster(paste0(pd_gi_input,dsmFn))
@@ -142,7 +142,7 @@ solidity      <- 1.0 # solidity
 # --- watershed segementation (imagery_segmentation 0) for segType=2
 is0_output    <- 0   # 0= seed value 1=segment id
 is0_join      <- 1     # 0=no join, 1=seed2saddle diff, 2=seed2seed diff
-is0_thresh    <- 5.5 # threshold for join difference in m
+is0_thresh    <- 1.5 # threshold for join difference in m
 #
 # --- growing segementation (imagery_segmentation 3) for segType=3
 is3_leafsize  <- 8
@@ -414,7 +414,7 @@ if (segType == 1) {
   #  
 } else if (segType == 4) {
   require(itcSegment)
-  itcSeg <- itcSegment::itcIMG(imagery = demR,
+  itcSeg <- itcSegment::itcIMG(imagery = chmR,
                                epsg=EPSG,
                                TRESHSeed = itc_seed,
                                TRESHCrown = itc_crown,
