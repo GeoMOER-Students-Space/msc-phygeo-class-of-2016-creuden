@@ -17,7 +17,7 @@ classifyTreeCrown <- function(crownFn,segType="2",
   # calculate area
   crownarea@data$area <- rgeos::gArea(crownarea,byid = TRUE)
   # filter for min, tree height and min max crown area
-  crownarea <-  crownarea[crownarea@data$crownsHeigh >= minTreeAlt ,]
+  crownarea <-  crownarea[crownarea@data$chmMAX >= minTreeAlt ,]
   crownarea <- crownarea[crownarea@data$area > crownMinArea & 
                            crownarea@data$area < crownMaxArea,]
   # calculate more metrics

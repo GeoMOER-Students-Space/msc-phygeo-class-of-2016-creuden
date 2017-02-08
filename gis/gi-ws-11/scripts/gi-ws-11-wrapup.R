@@ -272,15 +272,40 @@ if (segType == 1) {
                        " -CLASS_ALL 1",
                        " -CLASS_ID 1.000000",
                        " -SPLIT 1"),intern = TRUE)
-  #
-  #  make crown vector data set
-  trees_crowns_2 <- classifyTreeCrown(crownFn = paste0(pd_gi_run,"crownsHeight.shp"),segType = 2, 
+  # calculate statistics for each crown 
+  system(paste0(sagaCmd, " shapes_grid 2 ",
+                " -GRIDS ",pd_gi_run,"chm.sgrd ",
+                " -POLYGONS ",pd_gi_run,"crownsHeight.shp",
+                " -NAMING 1",
+                " -METHOD 2",
+                " -COUNT 1 -MIN  1 -MAX 1 -RANGE 1 -SUM 1 -MEAN 1 -VAR 1 -STDDEV 1",
+                " -QUANTILE 10",
+                " -PARALLELIZED 1",
+                " -RESULT ",pd_gi_run,"crownsHeightStat.shp"))
+  # dirty combining of data tables
+  ch <- rgdal::readOGR(pd_gi_run,"crownsHeight")
+  names(ch)<-gsub(names(ch),pattern = "\\NAME",replacement = "NAME1")
+  names(ch)<-gsub(names(ch),pattern = "\\ID",replacement = "ID1")
+  names(ch)<-gsub(names(ch),pattern = "\\crownsHeigh",replacement = "crownsHeigh1")
+  stats  <- rgdal::readOGR(pd_gi_run,"crownsHeightStat")
+  ch@data <- cbind(ch@data,stats@data)
+  names(ch)<-gsub(names(ch),pattern = "\\.",replacement = "")
+  rgdal::writeOGR(obj = ch, 
+                  layer = "crownsHeigh", 
+                  driver = "ESRI Shapefile", 
+                  dsn = pd_gi_run, 
+                  overwrite_layer = TRUE)
+  
+  #  make crown vector data set and do basic filtering 
+  trees_crowns_2 <- classifyTreeCrown(crownFn = paste0(pd_gi_run,"crownsHeigh.shp"),  
                                       funNames = c("eccentricityboundingbox","solidity"),
                                       minTreeAlt = minTreeAlt, 
                                       crownMinArea = crownMinArea, 
                                       crownMaxArea = crownMaxArea, 
                                       solidity = solidity, 
                                       WLRatio = WLRatio)
+  # extraction of the data values for each crown 
+  cat("extaction of raster values for each crown. will probably run a while...\n")
   pixvalues <- basicExtraction(x = chmR,fN = trees_crowns_2[[2]],responseCat = "NAME")
   # ----------------------
   #
@@ -405,8 +430,11 @@ if (segType == 1) {
                                       crownMaxArea = crownMaxArea, 
                                       solidity = solidity, 
                                       WLRatio = WLRatio)
+  
+
   pixvalues <- basicExtraction(x = chmR,fN = trees_crowns_2[[2]],responseCat = "ID")
   
+  tt<-
   #  TODO postclassification stuff
   
   
